@@ -61,8 +61,8 @@ const ProjectProposal = ({ proposal, onReset }) => {
       {/* メインタイトル */}
       <div className="bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-lg p-8 text-center">
         <h1 className="text-3xl font-bold mb-4">AI分析完了</h1>
-        <h2 className="text-xl mb-2">{proposal.projectDefinition?.projectName || 'プロジェクト名未設定'}</h2>
-        <p className="opacity-90">{proposal.projectDefinition?.goalDescription || 'プロジェクト説明未設定'}</p>
+        <h2 className="text-xl mb-2">{proposal.projectDefinition?.projectName || proposal.projectProposal?.title || 'プロジェクト名未設定'}</h2>
+        <p className="opacity-90">{proposal.projectDefinition?.goalDescription || proposal.companyAnalysis?.summary || 'プロジェクト説明未設定'}</p>
       </div>
 
       {/* ナビゲーションタブ */}
@@ -135,7 +135,7 @@ const OverviewSection = ({ proposal }) => {
             <Target className="h-5 w-5 text-blue-600" />
             <h3 className="font-semibold text-blue-900">プロジェクト目標</h3>
           </div>
-          <p className="text-blue-800">{proposal.projectDefinition?.goalDescription || 'データが見つかりません'}</p>
+          <p className="text-blue-800">{proposal.projectDefinition?.goalDescription || proposal.companyAnalysis?.summary || 'データが見つかりません'}</p>
         </div>
 
         <div className="bg-green-50 rounded-lg p-6">
@@ -143,7 +143,7 @@ const OverviewSection = ({ proposal }) => {
             <CheckCircle className="h-5 w-5 text-green-600" />
             <h3 className="font-semibold text-green-900">成功基準</h3>
           </div>
-          <p className="text-green-800">{proposal.projectDefinition?.successCriteria || 'データが見つかりません'}</p>
+          <p className="text-green-800">{proposal.projectDefinition?.successCriteria || proposal.projectProposal?.duration || 'データが見つかりません'}</p>
         </div>
       </div>
 
@@ -152,7 +152,7 @@ const OverviewSection = ({ proposal }) => {
           <Clock className="h-5 w-5 text-gray-600" />
           <h3 className="font-semibold text-gray-900">実施期間</h3>
         </div>
-        <p className="text-gray-700">{proposal.projectDefinition?.timeline || 'データが見つかりません'}</p>
+        <p className="text-gray-700">{proposal.projectDefinition?.timeline || proposal.projectProposal?.duration || 'データが見つかりません'}</p>
       </div>
     </div>
   );
@@ -167,24 +167,24 @@ const ApproachSection = ({ proposal }) => {
         <div className="space-y-4">
           <div className="bg-purple-50 rounded-lg p-4">
             <h4 className="font-semibold text-purple-900 mb-2">戦略立案フェーズ</h4>
-            <p className="text-purple-800 text-sm">{proposal.integratedApproach?.strategicPlanning || 'データが見つかりません'}</p>
+            <p className="text-purple-800 text-sm">{proposal.integratedApproach?.strategicPlanning || proposal.challenges?.approach || 'データが見つかりません'}</p>
           </div>
           
           <div className="bg-yellow-50 rounded-lg p-4">
             <h4 className="font-semibold text-yellow-900 mb-2">実行・運用フェーズ</h4>
-            <p className="text-yellow-800 text-sm">{proposal.integratedApproach?.execution || 'データが見つかりません'}</p>
+            <p className="text-yellow-800 text-sm">{proposal.integratedApproach?.execution || proposal.challenges?.primary || 'データが見つかりません'}</p>
           </div>
         </div>
 
         <div className="space-y-4">
           <div className="bg-cyan-50 rounded-lg p-4">
             <h4 className="font-semibold text-cyan-900 mb-2">分析・最適化フェーズ</h4>
-            <p className="text-cyan-800 text-sm">{proposal.integratedApproach?.analysis || 'データが見つかりません'}</p>
+            <p className="text-cyan-800 text-sm">{proposal.integratedApproach?.analysis || proposal.companyAnalysis?.strengths?.join(', ') || 'データが見つかりません'}</p>
           </div>
           
           <div className="bg-indigo-50 rounded-lg p-4">
             <h4 className="font-semibold text-indigo-900 mb-2">実行ロードマップ</h4>
-            <p className="text-indigo-800 text-sm">{proposal.integratedApproach?.roadmap || 'データが見つかりません'}</p>
+            <p className="text-indigo-800 text-sm">{proposal.integratedApproach?.roadmap || proposal.executionPlan?.phases?.join(' → ') || 'データが見つかりません'}</p>
           </div>
         </div>
       </div>
@@ -199,9 +199,9 @@ const ExpertiseSection = ({ proposal }) => (
         <Users className="h-5 w-5 text-primary-600" />
         <h3 className="font-semibold text-primary-900">求める人材像</h3>
       </div>
-      <p className="text-primary-800 mb-4">{proposal.requiredExpertise?.roleDefinition || 'データが見つかりません'}</p>
+      <p className="text-primary-800 mb-4">{proposal.requiredExpertise?.roleDefinition || proposal.recommendedTalent?.profile || 'データが見つかりません'}</p>
       <p className="text-sm text-primary-700">
-        <strong>経験レベル:</strong> {proposal.requiredExpertise?.experienceLevel || 'データが見つかりません'}
+        <strong>経験レベル:</strong> {proposal.requiredExpertise?.experienceLevel || proposal.recommendedTalent?.experience || 'データが見つかりません'}
       </p>
     </div>
 
@@ -209,7 +209,7 @@ const ExpertiseSection = ({ proposal }) => (
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <h4 className="font-semibold text-gray-900 mb-3">必要スキルセット</h4>
         <div className="space-y-2">
-          {proposal.requiredExpertise?.skillSet?.map((skill, index) => (
+          {(proposal.requiredExpertise?.skillSet || proposal.recommendedTalent?.skills)?.map((skill, index) => (
             <div key={index} className="flex items-center space-x-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
               <span className="text-sm text-gray-700">{skill}</span>
