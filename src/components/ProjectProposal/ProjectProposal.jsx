@@ -123,23 +123,27 @@ const ProjectProposal = ({ proposal, onReset }) => {
   );
 };
 
-const OverviewSection = ({ proposal }) => (
-  <div className="space-y-6">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="bg-blue-50 rounded-lg p-6">
-        <div className="flex items-center space-x-2 mb-3">
-          <Target className="h-5 w-5 text-blue-600" />
-          <h3 className="font-semibold text-blue-900">プロジェクト目標</h3>
+const OverviewSection = ({ proposal }) => {
+  console.log('OverviewSection proposal:', proposal);
+  console.log('projectDefinition:', proposal.projectDefinition);
+  
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-blue-50 rounded-lg p-6">
+          <div className="flex items-center space-x-2 mb-3">
+            <Target className="h-5 w-5 text-blue-600" />
+            <h3 className="font-semibold text-blue-900">プロジェクト目標</h3>
+          </div>
+          <p className="text-blue-800">{proposal.projectDefinition?.goalDescription || 'データが見つかりません'}</p>
         </div>
-        <p className="text-blue-800">{proposal.projectDefinition?.goalDescription}</p>
-      </div>
 
       <div className="bg-green-50 rounded-lg p-6">
         <div className="flex items-center space-x-2 mb-3">
           <CheckCircle className="h-5 w-5 text-green-600" />
           <h3 className="font-semibold text-green-900">成功基準</h3>
         </div>
-        <p className="text-green-800">{proposal.projectDefinition?.successCriteria}</p>
+        <p className="text-green-800">{proposal.projectDefinition?.successCriteria || 'データが見つかりません'}</p>
       </div>
     </div>
 
@@ -148,14 +152,18 @@ const OverviewSection = ({ proposal }) => (
         <Clock className="h-5 w-5 text-gray-600" />
         <h3 className="font-semibold text-gray-900">実施期間</h3>
       </div>
-      <p className="text-gray-700">{proposal.projectDefinition?.timeline}</p>
+      <p className="text-gray-700">{proposal.projectDefinition?.timeline || 'データが見つかりません'}</p>
     </div>
   </div>
-);
+  );
+};
 
-const ApproachSection = ({ proposal }) => (
-  <div className="space-y-6">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+const ApproachSection = ({ proposal }) => {
+  console.log('ApproachSection integratedApproach:', proposal.integratedApproach);
+  
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="space-y-4">
         <div className="bg-purple-50 rounded-lg p-4">
           <h4 className="font-semibold text-purple-900 mb-2">戦略立案フェーズ</h4>
