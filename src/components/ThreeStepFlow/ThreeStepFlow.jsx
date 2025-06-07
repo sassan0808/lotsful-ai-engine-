@@ -168,6 +168,7 @@ const ThreeStepFlow = () => {
 
   // 分析結果表示中
   if (analysisResults) {
+    console.log('Rendering ProjectProposal with results:', analysisResults);
     return <ProjectProposal proposal={analysisResults} onReset={handleReset} />;
   }
 

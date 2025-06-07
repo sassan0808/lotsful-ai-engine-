@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 
 const ProjectProposal = ({ proposal, onReset }) => {
+  console.log('ProjectProposal rendered with proposal:', proposal);
   const [activeSection, setActiveSection] = useState('overview');
 
   const handleExport = () => {
