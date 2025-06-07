@@ -1,17 +1,23 @@
 export const analyzeWithGemini = async (analysisData) => {
+  console.log('analyzeWithGemini called with:', analysisData);
+  
   try {
+    const requestBody = {
+      companyInfo: analysisData.companyInfo,
+      challenges: analysisData.challenges,
+      selectedIndustries: analysisData.selections.selectedIndustries,
+      selectedItems: analysisData.selections.selectedItems,
+      workingHours: analysisData.selections.workingHours
+    };
+    
+    console.log('Sending request to /api/analyze with:', requestBody);
+    
     const response = await fetch('/api/analyze', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        companyInfo: analysisData.companyInfo,
-        challenges: analysisData.challenges,
-        selectedIndustries: analysisData.selections.selectedIndustries,
-        selectedItems: analysisData.selections.selectedItems,
-        workingHours: analysisData.selections.workingHours
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -22,6 +28,7 @@ export const analyzeWithGemini = async (analysisData) => {
     }
 
     const results = await response.json();
+    console.log('API response received:', results);
     return results;
   } catch (error) {
     console.error('Gemini analysis failed:', error);

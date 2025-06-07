@@ -124,7 +124,9 @@ const ThreeStepFlow = () => {
     };
 
     try {
+      console.log('Starting analysis with data:', analysisData);
       const results = await analyzeWithGemini(analysisData);
+      console.log('Analysis results:', results);
       setAnalysisResults(results);
     } catch (error) {
       console.error('Analysis failed:', error);
