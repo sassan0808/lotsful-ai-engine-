@@ -1,12 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    // Enable server actions
-    serverActions: true,
-  },
-  env: {
-    CUSTOM_KEY: process.env.CUSTOM_KEY,
-  },
+  // Server actions are enabled by default in Next.js 15
 };
 
 module.exports = nextConfig;
