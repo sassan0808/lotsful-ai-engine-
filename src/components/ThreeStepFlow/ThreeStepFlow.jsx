@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowRight, ArrowLeft, Loader2, Send, CheckCircle } from 'lucide-react';
 import CompanyInfoInput from '../CompanyInfo/CompanyInfoInput';
 import ChallengesInput from '../ChallengesInput/ChallengesInput';
+import TemplateEditor from '../TemplateEditor/TemplateEditor';
 import IndustrySelector from '../IndustrySelector/IndustrySelector';
 import BusinessMatrix from '../BusinessMatrix/BusinessMatrix';
 import ProjectProposal from '../ProjectProposal/ProjectProposal';
@@ -108,17 +109,27 @@ const ThreeStepFlow = () => {
     }
   };
 
+  // テンプレート更新ハンドラー
+  const handleTemplateUpdate = (updatedTemplate) => {
+    setTemplate(updatedTemplate);
+    
+    // 業界情報をStep3に反映
+    if (updatedTemplate.companyProfile.industry.length > 0) {
+      setSelectedIndustries(updatedTemplate.companyProfile.industry);
+    }
+  };
+
   const steps = [
     { 
       id: 1, 
       title: '企業基本情報', 
-      description: '商談前の事前調査情報',
+      description: 'ディープリサーチ情報入力',
       required: true
     },
     { 
       id: 2, 
-      title: '課題・ニーズ', 
-      description: '商談で聞き取った情報',
+      title: '情報統合編集', 
+      description: 'テンプレート確認・追加情報入力',
       required: false
     },
     { 
@@ -283,9 +294,8 @@ const ThreeStepFlow = () => {
           )}
 
           {currentStep === 2 && (
-            <ChallengesInput
-              challenges={challenges}
-              onChallengesChange={setChallenges}
+            <TemplateEditor
+              onTemplateUpdate={handleTemplateUpdate}
             />
           )}
 
