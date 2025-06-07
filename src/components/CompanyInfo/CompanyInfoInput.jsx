@@ -20,13 +20,14 @@ const CompanyInfoInput = ({ companyInfo, onCompanyInfoChange }) => {
     setIsAnalyzing(true);
     
     try {
-      const response = await fetch('/api/analyze-company', {
+      // 新しいStep1専用API を使用
+      const response = await fetch('/api/analyze-step1', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          companyInfo: companyInfo.rawText
+          researchText: companyInfo.rawText
         })
       });
 
@@ -34,20 +35,35 @@ const CompanyInfoInput = ({ companyInfo, onCompanyInfoChange }) => {
         throw new Error('Analysis failed');
       }
 
-      const extracted = await response.json();
-      setExtractedInfo(extracted);
+      const analysisResult = await response.json();
+      
+      // テンプレート形式に変換して表示用データを作成
+      const extractedForDisplay = {
+        companyName: analysisResult.companyProfile.name,
+        industries: analysisResult.companyProfile.industry,
+        companySize: analysisResult.companyProfile.employeeCount || '規模不明',
+        businessDescription: analysisResult.companyProfile.businessDescription,
+        organizationFeatures: analysisResult.researchData.organizationCulture,
+        mainChallenges: [analysisResult.researchData.hypothesisInsights],
+        confidence: analysisResult.metadata.isMockData ? 30 : 85,
+        growthStage: '情報不足により特定不可'
+      };
+      
+      setExtractedInfo(extractedForDisplay);
+      
+      // テンプレート形式で上位コンポーネントに通知
       onCompanyInfoChange({
         rawText: companyInfo.rawText,
-        extracted: extracted
+        extracted: analysisResult // 完全なテンプレート構造
       });
     } catch (error) {
-      console.error('Company analysis error:', error);
-      // Fallback to mock analysis
+      console.error('Step1 analysis error:', error);
+      // フォールバック: 簡易抽出
       const extracted = extractCompanyInfo(companyInfo.rawText);
       setExtractedInfo(extracted);
       onCompanyInfoChange({
         rawText: companyInfo.rawText,
-        extracted: extracted
+        extracted: null // エラー時は null
       });
     } finally {
       setIsAnalyzing(false);

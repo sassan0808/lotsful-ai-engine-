@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowRight, ArrowLeft, Loader2, Send, CheckCircle } from 'lucide-react';
 import CompanyInfoInput from '../CompanyInfo/CompanyInfoInput';
 import ChallengesInput from '../ChallengesInput/ChallengesInput';
@@ -8,13 +8,15 @@ import IndustrySelector from '../IndustrySelector/IndustrySelector';
 import BusinessMatrix from '../BusinessMatrix/BusinessMatrix';
 import ProjectProposal from '../ProjectProposal/ProjectProposal';
 import { analyzeWithGemini } from '../../utils/geminiAnalysisEngine';
+import { TemplateManager } from '../../utils/templateManager';
 
 const ThreeStepFlow = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResults, setAnalysisResults] = useState(null);
+  const [template, setTemplate] = useState(null);
 
-  // データ状態管理
+  // 従来の状態（後方互換性のため維持）
   const [companyInfo, setCompanyInfo] = useState({
     rawText: '',
     extracted: null
@@ -40,14 +42,60 @@ const ThreeStepFlow = () => {
   const [selectedBusinessItems, setSelectedBusinessItems] = useState([]);
   const [workingHours, setWorkingHours] = useState(30);
 
-  // 企業情報変更時の業界自動連携
+  // テンプレート初期化
+  useEffect(() => {
+    const loadedTemplate = TemplateManager.loadTemplate();
+    setTemplate(loadedTemplate);
+    
+    // 既存状態に反映（業界自動連携）
+    if (loadedTemplate.companyProfile.industry.length > 0) {
+      setSelectedIndustries(loadedTemplate.companyProfile.industry);
+    }
+    
+    // 既存の企業情報状態を復元
+    if (loadedTemplate.researchData.deepResearchMemo) {
+      setCompanyInfo({
+        rawText: loadedTemplate.researchData.deepResearchMemo,
+        extracted: {
+          companyProfile: loadedTemplate.companyProfile,
+          researchData: loadedTemplate.researchData
+        }
+      });
+    }
+  }, []);
+
+  // 企業情報変更時の業界自動連携とテンプレート更新
   const handleCompanyInfoChange = (newCompanyInfo) => {
     setCompanyInfo(newCompanyInfo);
     
-    // AI分析結果がある場合、業界を自動連携
+    // Step1 AI分析結果がある場合
+    if (newCompanyInfo.extracted && newCompanyInfo.extracted.companyProfile) {
+      // テンプレートにStep1結果を保存
+      TemplateManager.updateStep1(
+        newCompanyInfo.extracted.companyProfile,
+        newCompanyInfo.extracted.researchData
+      );
+      
+      // 業界を自動連携
+      const extractedIndustries = newCompanyInfo.extracted.companyProfile.industry || [];
+      setSelectedIndustries(prev => {
+        const newIndustries = [...prev];
+        extractedIndustries.forEach(industry => {
+          if (!newIndustries.includes(industry)) {
+            newIndustries.push(industry);
+          }
+        });
+        return newIndustries;
+      });
+      
+      // テンプレート状態も更新
+      const updatedTemplate = TemplateManager.loadTemplate();
+      setTemplate(updatedTemplate);
+    }
+    
+    // 従来ロジック（後方互換性）
     if (newCompanyInfo.extracted && newCompanyInfo.extracted.industries) {
       const extractedIndustries = newCompanyInfo.extracted.industries;
-      // 既存選択と重複しないよう追加
       setSelectedIndustries(prev => {
         const newIndustries = [...prev];
         extractedIndustries.forEach(industry => {
@@ -164,6 +212,10 @@ const ThreeStepFlow = () => {
     setSelectedIndustries([]);
     setSelectedBusinessItems([]);
     setWorkingHours(30);
+    
+    // テンプレートもクリア
+    TemplateManager.clearTemplate();
+    setTemplate(TemplateManager.loadTemplate());
   };
 
   // 分析結果表示中
