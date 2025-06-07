@@ -64,8 +64,13 @@ export async function POST(request) {
     console.error('Analysis API error:', error);
     
     // Fallback to mock data on error
-    const { companyInfo, challenges, selectedIndustries, selectedItems, workingHours } = await request.json();
-    return NextResponse.json(generateMockAnalysis({ companyInfo, challenges, selections: { selectedIndustries, selectedItems, workingHours } }));
+    try {
+      const { companyInfo, challenges, selectedIndustries, selectedItems, workingHours } = await request.json();
+      return NextResponse.json(generateMockAnalysis({ companyInfo, challenges, selections: { selectedIndustries, selectedItems, workingHours } }));
+    } catch (parseError) {
+      console.error('Failed to parse request JSON for fallback:', parseError);
+      return NextResponse.json({ error: 'Analysis failed and unable to generate fallback data' }, { status: 500 });
+    }
   }
 }
 
@@ -82,7 +87,7 @@ function createAnalysisPrompt(companyInfo, challenges, selectedIndustries, selec
 企業情報分析とプロジェクト提案を行ってください。
 
 ## 企業情報
-${companyInfo}
+${companyInfo?.rawText || companyInfo || '企業情報が提供されていません'}
 
 ## 業界
 ${selectedIndustries?.join(', ') || '未指定'}
@@ -94,7 +99,14 @@ ${challengesText}
 ${selectedItemsText}
 
 ## 依頼内容
-上記の情報を基に、以下の形式で5タブ構成の提案書を作成してください：
+上記の情報を基に、以下の形式で5タブ構成の提案書を作成してください。
+
+【重要な指示】
+- 提供された情報から明確に判断できない項目については、推測や創作をせず「情報不足により特定不可」と記載してください
+- 企業名が不明な場合は「企業名：情報不足により特定不可」
+- 従業員数が不明な場合は「従業員数：情報不足により特定不可」
+- 課題が具体的に記載されていない場合は、一般論ではなく「詳細情報が必要」と記載
+- 常に正確性を重視し、不確実な情報は明確にその旨を示してください
 
 ## Tab1: 課題整理
 
@@ -200,9 +212,9 @@ function parseGeminiResponse(text, companyInfo, industry, selectedItems) {
     // Tab1: 課題整理
     challengeAnalysis: {
       // 現状分析
-      companyName: extractFieldValue(text, '企業名') || '分析対象企業',
-      industryName: extractFieldValue(text, '業界') || industry || '対象業界',
-      employeeCount: extractFieldValue(text, '従業員数') || '規模不明',
+      companyName: extractFieldValue(text, '企業名') || (companyInfo?.rawText ? extractCompanyName(companyInfo.rawText) : null) || '情報不足により特定不可',
+      industryName: extractFieldValue(text, '業界') || industry?.join?.(', ') || industry || '情報不足により特定不可',
+      employeeCount: extractFieldValue(text, '従業員数') || '情報不足により特定不可',
       
       // 課題マッピング（表形式データの抽出）
       challengeMapping: extractChallengeMapping(text) || [
@@ -212,12 +224,12 @@ function parseGeminiResponse(text, companyInfo, industry, selectedItems) {
       ],
       
       // 課題の深掘り
-      surfaceChallenges: extractSection(text, '表面的な課題') || '業務効率の低下と手動作業の増加が見受けられる',
-      rootChallenges: extractSection(text, '本質的な課題') || 'データ活用体制の不備と組織間連携の不足が根本原因',
+      surfaceChallenges: extractSection(text, '表面的な課題') || '詳細な課題情報が必要です',
+      rootChallenges: extractSection(text, '本質的な課題') || '根本原因の特定には更なる情報収集が必要',
       impactRisks: {
-        shortTerm: extractRiskByTerm(text, '短期') || '作業時間の増加とミスの発生',
-        mediumTerm: extractRiskByTerm(text, '中期') || '競合他社との差が拡大し市場シェア低下',
-        longTerm: extractRiskByTerm(text, '長期') || '事業成長の停滞と組織力の低下'
+        shortTerm: extractRiskByTerm(text, '短期') || '情報不足により影響予測不可',
+        mediumTerm: extractRiskByTerm(text, '中期') || '情報不足により影響予測不可',
+        longTerm: extractRiskByTerm(text, '長期') || '情報不足により影響予測不可'
       }
     },
     
@@ -418,6 +430,44 @@ function extractPhaseDeliverables(text) {
   return deliverables.length > 0 ? deliverables : null;
 }
 
+// Helper functions for extracting information from company info text
+function extractCompanyName(text) {
+  // Try to extract company name from various patterns
+  const patterns = [
+    /会社名[：:]\s*(.+?)[\n\r]/,
+    /企業名[：:]\s*(.+?)[\n\r]/,
+    /(.+?)株式会社/,
+    /株式会社(.+)/,
+    /(.+?)会社/
+  ];
+  
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) {
+      return match[1].trim();
+    }
+  }
+  return null;
+}
+
+function extractEmployeeCount(text) {
+  // Try to extract employee count from various patterns
+  const patterns = [
+    /従業員数?[：:]\s*(\d+[人名]?)/,
+    /社員数[：:]\s*(\d+[人名]?)/,
+    /(\d+)人/,
+    /従業員規模[：:]\s*(.+?)[\n\r]/
+  ];
+  
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) {
+      return match[1].trim();
+    }
+  }
+  return null;
+}
+
 function generateMockAnalysis(analysisData) {
   const { companyInfo, challenges, selections } = analysisData;
   const { selectedIndustries, selectedItems, workingHours } = selections || {};
@@ -427,9 +477,9 @@ function generateMockAnalysis(analysisData) {
     // Tab1: 課題整理
     challengeAnalysis: {
       // 現状分析
-      companyName: '分析対象企業（サンプル）',
-      industryName: selectedIndustries?.join(', ') || '対象業界',
-      employeeCount: '中小企業（50-200名）',
+      companyName: (companyInfo?.rawText ? extractCompanyName(companyInfo.rawText) : null) || '情報不足により特定不可',
+      industryName: selectedIndustries?.join(', ') || '情報不足により特定不可',
+      employeeCount: (companyInfo?.rawText ? extractEmployeeCount(companyInfo.rawText) : null) || '情報不足により特定不可',
       
       // 課題マッピング
       challengeMapping: [
