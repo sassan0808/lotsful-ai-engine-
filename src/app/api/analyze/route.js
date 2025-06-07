@@ -243,58 +243,60 @@ function generateMockAnalysis(analysisData) {
       priority: 'high',
       approach: '段階的なデジタル変革による持続可能な成長戦略'
     },
-    projectProposal: {
-      title: `${selectedIndustries?.join(', ') || '対象'}業界向け業務最適化・DXプロジェクト`,
-      duration: '3-6ヶ月',
-      workload: totalHours,
-      deliverables: [
-        '現状分析レポート',
-        '業務プロセス改善提案書',
-        'DX推進ロードマップ',
-        '効果測定指標の設定'
-      ],
-      expectedEffects: [
-        '業務効率20-30%向上',
-        'コスト削減効果（年間10-15%）',
-        '組織の生産性向上',
-        '顧客満足度の向上'
-      ]
+    projectDefinition: {
+      projectName: `${selectedIndustries?.join(', ') || '対象'}業界向け業務最適化・DXプロジェクト`,
+      goalDescription: '企業のデジタル化を推進し、競争力強化と業務効率向上を実現する',
+      successCriteria: '3ヶ月で基盤構築、6ヶ月で運用開始、1年で目標ROI達成',
+      timeline: `${totalHours}時間/月での3-6ヶ月プロジェクト`
     },
-    recommendedTalent: {
-      profile: 'ビジネス分析とDX推進の経験を持つシニアコンサルタント',
-      skills: [
+    integratedApproach: {
+      strategicPlanning: '現状分析→戦略設計→実行計画策定の3段階アプローチ',
+      execution: '優先度の高い領域から段階的実装、早期成果創出を重視',
+      analysis: 'データ駆動型の継続的改善サイクル確立',
+      roadmap: 'フェーズ1: 基盤整備、フェーズ2: 本格展開、フェーズ3: 最適化'
+    },
+    requiredExpertise: {
+      roleDefinition: 'ビジネス分析とDX推進の経験を持つシニアコンサルタント',
+      experienceLevel: '3-5年以上の実務経験、類似業界での成功事例',
+      skillSet: [
         'ビジネス分析・要件定義',
         'プロジェクトマネジメント',
         'データ分析・可視化',
         'DX戦略立案・実行支援'
-      ],
-      experience: '3-5年以上の実務経験、類似業界での成功事例'
+      ]
     },
-    executionPlan: {
-      phases: [
-        'フェーズ1: 現状分析・課題特定 (4週間)',
-        'フェーズ2: 解決策設計・プロトタイプ (6週間)',
-        'フェーズ3: 実装・検証 (8週間)',
-        'フェーズ4: 展開・定着支援 (4週間)'
-      ],
-      milestones: [
-        '現状分析レポート完成',
-        '改善提案書作成',
-        'パイロット実装完了',
-        '効果測定・最終報告'
-      ],
-      risks: [
+    remoteWorkPlan: {
+      communicationFrequency: '週2回の定期MTG＋必要に応じたアドホック相談',
+      deliverables: '週次進捗レポート、月次成果報告、フェーズ完了時の詳細分析',
+      collaborationTools: 'Slack/Teams + Notion/Confluence + 週次ビデオ会議'
+    },
+    expectedOutcome: {
+      shortTerm: '現状分析完了、改善計画策定、クイックウィン施策実行',
+      mediumTerm: '主要施策の実装完了、初期効果測定、改善サイクル確立',
+      longTerm: '目標ROI達成、組織能力向上、持続的改善体制構築'
+    },
+    riskMitigation: {
+      potentialChallenges: [
         '組織の変化への抵抗',
         'リソース・予算の制約',
         '外部環境の急激な変化',
         '技術的な実装課題'
+      ],
+      mitigationStrategies: [
+        '経営層との密接な連携体制構築',
+        '段階的実装によるリスク分散',
+        '外部パートナー活用によるリソース補完',
+        '定期的な進捗確認と計画調整'
       ]
     },
     metadata: {
-      selectedIndustries,
-      selectedItemsCount: selectedItems?.length || 0,
-      totalWorkingHours: totalHours,
-      analysisDate: new Date().toISOString()
+      analysisDate: new Date().toISOString(),
+      inputDataSummary: {
+        selectedItemsCount: selectedItems?.length || 0,
+        workingHours: totalHours,
+        selectedIndustries
+      },
+      isMockData: true
     }
   };
 }
