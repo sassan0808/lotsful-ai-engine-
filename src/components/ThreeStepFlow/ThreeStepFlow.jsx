@@ -93,7 +93,13 @@ const ThreeStepFlow = () => {
   };
 
   const canAnalyze = () => {
-    return selectedBusinessItems.length > 0 && selectedIndustries.length > 0;
+    const result = selectedBusinessItems.length > 0 && selectedIndustries.length > 0;
+    console.log('canAnalyze check:', {
+      selectedBusinessItems: selectedBusinessItems.length,
+      selectedIndustries: selectedIndustries.length,
+      result
+    });
+    return result;
   };
 
   const handleNext = () => {
@@ -306,7 +312,12 @@ const ThreeStepFlow = () => {
               </button>
             ) : (
               <button
-                onClick={handleAnalyze}
+                onClick={(e) => {
+                  console.log('AI分析ボタンクリック!');
+                  console.log('Button disabled?', !canAnalyze() || isAnalyzing);
+                  e.preventDefault();
+                  handleAnalyze();
+                }}
                 disabled={!canAnalyze() || isAnalyzing}
                 className="flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
