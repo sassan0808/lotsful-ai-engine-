@@ -19,6 +19,7 @@ export async function POST(request) {
       return NextResponse.json(generateMockAnalysis({ companyInfo, challenges, selections: { selectedIndustries, selectedItems, workingHours } }));
     }
 
+
     // Prepare the analysis prompt for Gemini
     const prompt = createAnalysisPrompt(companyInfo, challenges, selectedIndustries, selectedItems);
     
@@ -93,97 +94,175 @@ ${challengesText}
 ${selectedItemsText}
 
 ## 依頼内容
-上記の情報を基に、以下の形式でプロジェクト提案を作成してください：
+上記の情報を基に、以下の形式で5タブ構成の提案書を作成してください：
 
-### 1. 企業分析サマリー
-- 企業の特徴と強み
-- 業界における位置づけ
-- 成長ステージの分析
+## Tab1: 課題整理
 
-### 2. 課題分析
-- 特定された主要課題
-- 課題の優先度
-- 解決のための戦略的アプローチ
+### 現状分析
+企業名：[企業名を記載]
+業界：[業界を記載]
+従業員数：[従業員規模を記載]
 
-### 3. プロジェクト提案
-- プロジェクト名
-- 期間と工数
-- 主要な成果物
-- 期待される効果
+### 課題マッピング
+以下の表形式で3つの領域について記載してください：
 
-### 4. 必要な人材・スキル
-- 推奨される副業人材のプロフィール
-- 必要なスキルセット
-- 経験レベル
+| 領域 | 現状 | 理想 | ギャップ |
+|------|------|------|---------|
+| [領域1名] | [現状詳細] | [理想詳細] | [ギャップ分析] |
+| [領域2名] | [現状詳細] | [理想詳細] | [ギャップ分析] |
+| [領域3名] | [現状詳細] | [理想詳細] | [ギャップ分析] |
 
-### 5. 実行プラン
-- フェーズ別の実行計画
-- マイルストーン
-- リスクと対策
+### 課題の深掘り
 
-簡潔で実践的な提案を心がけ、副業人材（月20-40時間、リモート中心）の制約を考慮してください。
+#### 表面的な課題
+[表面的に見えている問題を具体的に記載]
+
+#### 本質的な課題
+[真の原因・構造的な問題を記載]
+
+#### 放置した場合の影響
+- 短期（3ヶ月）: [具体的なリスクを記載]
+- 中期（6ヶ月）: [具体的なリスクを記載]
+- 長期（1年）: [具体的なリスクを記載]
+
+## Tab2: プロジェクト設計
+
+### プロジェクト概要
+
+#### ミッション
+[このプロジェクトで実現することを記載]
+
+#### スコープ定義
+
+##### 含むもの
+✅ [スコープ1]
+✅ [スコープ2]
+✅ [スコープ3]
+
+##### 含まないもの
+❌ [対象外1]
+❌ [対象外2]
+
+### フェーズ設計
+
+#### Phase 1: [フェーズ名]（[期間]）
+
+##### 目的
+[このフェーズのゴールを記載]
+
+##### 主要タスク
+- [タスク1]
+  詳細：[具体的な作業内容]
+  期限：[日数/週数]
+- [タスク2]
+  詳細：[具体的な作業内容]
+  期限：[日数/週数]
+- [タスク3]
+  詳細：[具体的な作業内容]
+  期限：[日数/週数]
+
+##### 成果物
+📄 [成果物1]
+📊 [成果物2]
+🔧 [成果物3]
+
+##### マイルストーン
+[具体的な達成基準を記載]
+
+#### Phase 2: [フェーズ名]（[期間]）
+
+##### 目的
+[このフェーズのゴールを記載]
+
+##### 主要タスク
+- [タスク1]
+  詳細：[具体的な作業内容]
+  期限：[日数/週数]
+- [タスク2]
+  詳細：[具体的な作業内容]
+  期限：[日数/週数]
+
+##### 成果物
+📈 [成果物1]
+🚀 [成果物2]
+
+##### マイルストーン
+[具体的な達成基準を記載]
+
+簡潔で実践的な提案を心がけ、副業/兼業人材（月10-80時間、デフォルト30時間、リモート中心）の制約を考慮してください。
 `;
 }
 
 function parseGeminiResponse(text, companyInfo, industry, selectedItems) {
-  // Basic parsing - in a real implementation, this would be more sophisticated
-  const sections = text.split('###').filter(section => section.trim());
+  // Parse 5-tab structure from Gemini response
   
   return {
-    companyAnalysis: {
-      summary: extractSection(text, '企業分析サマリー') || '企業の特徴と強みを分析中...',
-      strengths: ['データドリブンな意思決定', '柔軟な組織体制', '市場適応力'],
-      position: extractSection(text, '業界における位置づけ') || `${industry}業界での競争優位性を持つ企業`
-    },
-    challenges: {
-      primary: extractSection(text, '課題分析') || '主要な課題を特定し、解決策を検討中...',
-      priority: 'high',
-      approach: '戦略的アプローチによる段階的解決'
-    },
-    projectProposal: {
-      title: extractSection(text, 'プロジェクト名') || '業務最適化・DXプロジェクト',
-      duration: '3-6ヶ月',
-      workload: selectedItems.reduce((total, item) => total + (item.workingHours || 0), 0),
-      deliverables: extractListItems(text, '成果物') || [
-        '業務プロセス改善提案書',
-        'DX推進ロードマップ',
-        '効果測定指標の設定'
+    // Tab1: 課題整理
+    challengeAnalysis: {
+      // 現状分析
+      companyName: extractFieldValue(text, '企業名') || '分析対象企業',
+      industryName: extractFieldValue(text, '業界') || industry || '対象業界',
+      employeeCount: extractFieldValue(text, '従業員数') || '規模不明',
+      
+      // 課題マッピング（表形式データの抽出）
+      challengeMapping: extractChallengeMapping(text) || [
+        { area: '営業プロセス', current: '手動作業が多い', ideal: '自動化とデータ活用', gap: '効率性とスピードの大幅な改善が必要' },
+        { area: 'データ管理', current: '分散した情報管理', ideal: '統合されたデータ基盤', gap: 'データの一元化と活用体制の構築' },
+        { area: '組織体制', current: '縦割り組織', ideal: '横断的なチーム編成', gap: 'コラボレーションと情報共有の仕組み化' }
       ],
-      expectedEffects: extractListItems(text, '期待される効果') || [
-        '業務効率20%向上',
-        'コスト削減効果',
-        '組織の生産性向上'
+      
+      // 課題の深掘り
+      surfaceChallenges: extractSection(text, '表面的な課題') || '業務効率の低下と手動作業の増加が見受けられる',
+      rootChallenges: extractSection(text, '本質的な課題') || 'データ活用体制の不備と組織間連携の不足が根本原因',
+      impactRisks: {
+        shortTerm: extractRiskByTerm(text, '短期') || '作業時間の増加とミスの発生',
+        mediumTerm: extractRiskByTerm(text, '中期') || '競合他社との差が拡大し市場シェア低下',
+        longTerm: extractRiskByTerm(text, '長期') || '事業成長の停滞と組織力の低下'
+      }
+    },
+    
+    // Tab2: プロジェクト設計
+    projectDesign: {
+      // プロジェクト概要
+      mission: extractSection(text, 'ミッション') || 'デジタル変革による業務効率化と競争力強化を実現する',
+      scopeIncluded: extractScopeItems(text, '含むもの') || [
+        '選択された業務領域の最適化',
+        'データ活用基盤の構築',
+        '組織体制の改善提案'
+      ],
+      scopeExcluded: extractScopeItems(text, '含まないもの') || [
+        'システム開発・実装',
+        '人事制度の変更'
+      ],
+      
+      // フェーズ設計
+      phases: extractPhases(text) || [
+        {
+          name: '現状分析・戦略設計',
+          period: '4-6週間',
+          purpose: '現状の課題を詳細分析し、改善戦略を設計する',
+          tasks: [
+            { name: '現状業務フローの詳細分析', detail: 'ヒアリングと業務観察による詳細調査', deadline: '2週間' },
+            { name: 'データ収集・分析', detail: '既存データの整理と分析基盤の設計', deadline: '2週間' },
+            { name: '改善戦略の策定', detail: '課題に対する具体的な解決策の設計', deadline: '2週間' }
+          ],
+          deliverables: ['📄 現状分析レポート', '📊 改善戦略書', '🔧 実行計画書'],
+          milestone: '改善戦略の承認と次フェーズへの移行決定'
+        },
+        {
+          name: '実装・改善実行',
+          period: '8-10週間',
+          purpose: '策定した改善策を段階的に実行し、効果を検証する',
+          tasks: [
+            { name: 'パイロット実装', detail: '重要度の高い領域での試行実装', deadline: '4週間' },
+            { name: '効果測定・調整', detail: 'KPI測定と改善策の調整', deadline: '4週間' }
+          ],
+          deliverables: ['📈 効果測定レポート', '🚀 本格展開計画'],
+          milestone: '目標KPIの達成と本格展開の準備完了'
+        }
       ]
     },
-    recommendedTalent: {
-      profile: extractSection(text, '必要な人材・スキル') || 'ビジネス分析とDX推進の経験を持つ人材',
-      skills: extractListItems(text, 'スキルセット') || [
-        'ビジネス分析',
-        'プロジェクトマネジメント',
-        'データ分析',
-        'DX戦略立案'
-      ],
-      experience: '3-5年以上の実務経験'
-    },
-    executionPlan: {
-      phases: extractListItems(text, 'フェーズ別') || [
-        'フェーズ1: 現状分析・課題特定 (4週間)',
-        'フェーズ2: 解決策設計・プロトタイプ (6週間)',
-        'フェーズ3: 実装・検証 (8週間)',
-        'フェーズ4: 展開・定着支援 (4週間)'
-      ],
-      milestones: extractListItems(text, 'マイルストーン') || [
-        '現状分析レポート完成',
-        '改善提案書作成',
-        'パイロット実装',
-        '効果測定・報告'
-      ],
-      risks: extractListItems(text, 'リスク') || [
-        '組織の変化への抵抗',
-        'リソースの制約',
-        '外部環境の変化'
-      ]
-    },
+
     metadata: {
       industry,
       selectedItemsCount: selectedItems.length,
@@ -223,72 +302,229 @@ function extractListItems(text, context) {
   return items.length > 0 ? items : null;
 }
 
+function extractFieldValue(text, fieldName) {
+  const regex = new RegExp(`${fieldName}[：:]\\s*(.+)`, 'i');
+  const match = text.match(regex);
+  return match ? match[1].trim() : null;
+}
+
+function extractChallengeMapping(text) {
+  const tableRegex = /\|\s*領域\s*\|\s*現状\s*\|\s*理想\s*\|\s*ギャップ\s*\|([\s\S]*?)(?=\n\n|\n###|$)/i;
+  const match = text.match(tableRegex);
+  
+  if (!match) return null;
+  
+  const rows = match[1].split('\n').filter(line => line.includes('|') && !line.includes('---'));
+  const mapping = [];
+  
+  rows.forEach(row => {
+    const cells = row.split('|').map(cell => cell.trim()).filter(cell => cell);
+    if (cells.length >= 4) {
+      mapping.push({
+        area: cells[0],
+        current: cells[1],
+        ideal: cells[2],
+        gap: cells[3]
+      });
+    }
+  });
+  
+  return mapping.length > 0 ? mapping : null;
+}
+
+function extractRiskByTerm(text, term) {
+  const regex = new RegExp(`${term}[（(].*?[）)]\\s*[：:]\\s*(.+)`, 'i');
+  const match = text.match(regex);
+  return match ? match[1].trim() : null;
+}
+
+function extractScopeItems(text, scopeType) {
+  const startRegex = new RegExp(`${scopeType}\\s*\n`, 'i');
+  const match = text.match(startRegex);
+  
+  if (!match) return null;
+  
+  const startIndex = match.index + match[0].length;
+  const afterText = text.substring(startIndex);
+  const lines = afterText.split('\n');
+  const items = [];
+  
+  for (const line of lines) {
+    if (line.includes('✅') || line.includes('❌')) {
+      const item = line.replace(/[✅❌]/g, '').trim();
+      if (item) items.push(item);
+    } else if (line.includes('#') || (items.length > 0 && line.trim() === '')) {
+      break;
+    }
+  }
+  
+  return items.length > 0 ? items : null;
+}
+
+function extractPhases(text) {
+  const phaseRegex = /#### Phase \d+:\s*(.+?)（(.+?)）([\s\S]*?)(?=#### Phase|$)/gi;
+  const phases = [];
+  let match;
+  
+  while ((match = phaseRegex.exec(text)) !== null) {
+    const phaseName = match[1].trim();
+    const period = match[2].trim();
+    const content = match[3];
+    
+    const purpose = extractSection(content, '目的') || '';
+    const tasks = extractPhaseTasks(content) || [];
+    const deliverables = extractPhaseDeliverables(content) || [];
+    const milestone = extractSection(content, 'マイルストーン') || '';
+    
+    phases.push({
+      name: phaseName,
+      period: period,
+      purpose: purpose,
+      tasks: tasks,
+      deliverables: deliverables,
+      milestone: milestone
+    });
+  }
+  
+  return phases.length > 0 ? phases : null;
+}
+
+function extractPhaseTasks(text) {
+  const taskRegex = /- (.+?)\n\s*詳細[：:](.+?)\n\s*期限[：:](.+?)(?=\n-|\n#|$)/gi;
+  const tasks = [];
+  let match;
+  
+  while ((match = taskRegex.exec(text)) !== null) {
+    tasks.push({
+      name: match[1].trim(),
+      detail: match[2].trim(),
+      deadline: match[3].trim()
+    });
+  }
+  
+  return tasks.length > 0 ? tasks : null;
+}
+
+function extractPhaseDeliverables(text) {
+  const deliverableRegex = /[📄📊🔧📈🚀]\s*(.+?)(?=\n|$)/g;
+  const deliverables = [];
+  let match;
+  
+  while ((match = deliverableRegex.exec(text)) !== null) {
+    const fullMatch = match[0].trim();
+    if (fullMatch) deliverables.push(fullMatch);
+  }
+  
+  return deliverables.length > 0 ? deliverables : null;
+}
+
 function generateMockAnalysis(analysisData) {
   const { companyInfo, challenges, selections } = analysisData;
   const { selectedIndustries, selectedItems, workingHours } = selections || {};
   const totalHours = selectedItems?.reduce((total, item) => total + (item.workingHours || 0), 0) || workingHours || 0;
   
   return {
-    companyAnalysis: {
-      summary: `${selectedIndustries?.join(', ') || '対象'}業界で事業を展開する企業として、デジタル変革と業務効率化に積極的に取り組む姿勢が見られます。`,
-      strengths: [
-        'データドリブンな意思決定',
-        '柔軟な組織体制',
-        '市場適応力の高さ'
+    // Tab1: 課題整理
+    challengeAnalysis: {
+      // 現状分析
+      companyName: '分析対象企業（サンプル）',
+      industryName: selectedIndustries?.join(', ') || '対象業界',
+      employeeCount: '中小企業（50-200名）',
+      
+      // 課題マッピング
+      challengeMapping: [
+        { 
+          area: '営業プロセス', 
+          current: '手動での顧客管理と提案書作成', 
+          ideal: 'CRMを活用した自動化と効率化', 
+          gap: 'システム化により50%の工数削減が可能' 
+        },
+        { 
+          area: 'データ管理', 
+          current: 'Excel分散管理による非効率', 
+          ideal: '統合データベースによる一元管理', 
+          gap: 'データ品質向上と分析基盤の構築が必要' 
+        },
+        { 
+          area: '組織連携', 
+          current: '部門間の情報共有が限定的', 
+          ideal: '横断的なコラボレーション体制', 
+          gap: 'コミュニケーションツールと仕組みの整備' 
+        }
       ],
-      position: `${selectedIndustries?.join(', ') || '対象'}業界において競争優位性を持つ企業として位置づけられています。`
+      
+      // 課題の深掘り
+      surfaceChallenges: '業務時間の増加、ミスの発生、顧客対応の遅延が目立つようになってきている',
+      rootChallenges: 'デジタル化の遅れと組織間連携の不足が根本的な原因となっており、データ活用できる体制が整っていない',
+      impactRisks: {
+        shortTerm: '作業時間の更なる増加により残業時間が増え、従業員満足度が低下',
+        mediumTerm: '競合他社との差が拡大し、新規顧客獲得が困難になる可能性',
+        longTerm: '事業成長の停滞と優秀な人材の流出により、長期的な競争力を失う'
+      }
     },
-    challenges: {
-      primary: '業務プロセスの最適化とDX推進による競争力向上が主要な課題として特定されました。',
-      priority: 'high',
-      approach: '段階的なデジタル変革による持続可能な成長戦略'
-    },
-    projectDefinition: {
-      projectName: `${selectedIndustries?.join(', ') || '対象'}業界向け業務最適化・DXプロジェクト`,
-      goalDescription: '企業のデジタル化を推進し、競争力強化と業務効率向上を実現する',
-      successCriteria: '3ヶ月で基盤構築、6ヶ月で運用開始、1年で目標ROI達成',
-      timeline: `${totalHours}時間/月での3-6ヶ月プロジェクト`
-    },
-    integratedApproach: {
-      strategicPlanning: '現状分析→戦略設計→実行計画策定の3段階アプローチ',
-      execution: '優先度の高い領域から段階的実装、早期成果創出を重視',
-      analysis: 'データ駆動型の継続的改善サイクル確立',
-      roadmap: 'フェーズ1: 基盤整備、フェーズ2: 本格展開、フェーズ3: 最適化'
-    },
-    requiredExpertise: {
-      roleDefinition: 'ビジネス分析とDX推進の経験を持つシニアコンサルタント',
-      experienceLevel: '3-5年以上の実務経験、類似業界での成功事例',
-      skillSet: [
-        'ビジネス分析・要件定義',
-        'プロジェクトマネジメント',
-        'データ分析・可視化',
-        'DX戦略立案・実行支援'
+    
+    // Tab2: プロジェクト設計
+    projectDesign: {
+      // プロジェクト概要
+      mission: `${selectedIndustries?.join(', ') || '対象'}業界における競争優位性を構築するため、デジタル変革による業務効率化と組織力強化を実現する`,
+      scopeIncluded: [
+        '選択された業務領域の詳細分析と最適化',
+        'データ活用基盤の設計と導入支援',
+        '組織体制改善と運用ルールの策定'
+      ],
+      scopeExcluded: [
+        'システム開発・カスタマイズ作業',
+        '人事制度や給与体系の変更'
+      ],
+      
+      // フェーズ設計
+      phases: [
+        {
+          name: '現状分析・戦略設計',
+          period: '4-6週間',
+          purpose: '現状の業務プロセスを詳細分析し、改善戦略を設計する',
+          tasks: [
+            { 
+              name: '現状業務フローの詳細分析', 
+              detail: '各部門へのヒアリングと業務観察による現状把握', 
+              deadline: '2週間' 
+            },
+            { 
+              name: 'データ収集・分析', 
+              detail: '既存データの整理と活用可能性の評価', 
+              deadline: '2週間' 
+            },
+            { 
+              name: '改善戦略の策定', 
+              detail: '課題解決のための具体的なアクションプランの設計', 
+              deadline: '2週間' 
+            }
+          ],
+          deliverables: ['📄 現状分析レポート', '📊 改善戦略書', '🔧 実行計画書'],
+          milestone: '改善戦略の承認と次フェーズへの移行決定'
+        },
+        {
+          name: '実装・改善実行',
+          period: '8-10週間',
+          purpose: '策定した改善策を段階的に実行し、効果を検証する',
+          tasks: [
+            { 
+              name: 'パイロット実装', 
+              detail: '重要度の高い1-2領域での試行実装とテスト', 
+              deadline: '4週間' 
+            },
+            { 
+              name: '効果測定・調整', 
+              detail: 'KPI測定と改善策の微調整、本格展開準備', 
+              deadline: '4週間' 
+            }
+          ],
+          deliverables: ['📈 効果測定レポート', '🚀 本格展開計画'],
+          milestone: '目標KPI達成と全社展開の準備完了'
+        }
       ]
     },
-    remoteWorkPlan: {
-      communicationFrequency: '週2回の定期MTG＋必要に応じたアドホック相談',
-      deliverables: '週次進捗レポート、月次成果報告、フェーズ完了時の詳細分析',
-      collaborationTools: 'Slack/Teams + Notion/Confluence + 週次ビデオ会議'
-    },
-    expectedOutcome: {
-      shortTerm: '現状分析完了、改善計画策定、クイックウィン施策実行',
-      mediumTerm: '主要施策の実装完了、初期効果測定、改善サイクル確立',
-      longTerm: '目標ROI達成、組織能力向上、持続的改善体制構築'
-    },
-    riskMitigation: {
-      potentialChallenges: [
-        '組織の変化への抵抗',
-        'リソース・予算の制約',
-        '外部環境の急激な変化',
-        '技術的な実装課題'
-      ],
-      mitigationStrategies: [
-        '経営層との密接な連携体制構築',
-        '段階的実装によるリスク分散',
-        '外部パートナー活用によるリソース補完',
-        '定期的な進捗確認と計画調整'
-      ]
-    },
+
     metadata: {
       analysisDate: new Date().toISOString(),
       inputDataSummary: {

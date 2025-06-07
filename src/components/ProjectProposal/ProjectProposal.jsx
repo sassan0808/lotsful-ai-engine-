@@ -9,7 +9,7 @@ import {
 
 const ProjectProposal = ({ proposal, onReset }) => {
   console.log('ProjectProposal rendered with proposal:', proposal);
-  const [activeSection, setActiveSection] = useState('overview');
+  const [activeSection, setActiveSection] = useState('challenges');
 
   const handleExport = () => {
     const exportData = {
@@ -29,12 +29,11 @@ const ProjectProposal = ({ proposal, onReset }) => {
   };
 
   const sections = [
-    { id: 'overview', label: 'プロジェクト概要', icon: Target },
-    { id: 'approach', label: '統合アプローチ', icon: TrendingUp },
-    { id: 'expertise', label: '必要な専門性', icon: Users },
-    { id: 'remote', label: 'リモートワーク計画', icon: Calendar },
-    { id: 'outcome', label: '期待される成果', icon: Star },
-    { id: 'risks', label: 'リスク対策', icon: AlertTriangle }
+    { id: 'challenges', label: '課題整理', icon: Target },
+    { id: 'design', label: 'プロジェクト設計', icon: TrendingUp },
+    { id: 'talent', label: '人材提案', icon: Users },
+    { id: 'outcome', label: '期待成果', icon: Star },
+    { id: 'implementation', label: '実施要項', icon: AlertTriangle }
   ];
 
   return (
@@ -89,12 +88,11 @@ const ProjectProposal = ({ proposal, onReset }) => {
 
         {/* セクション内容 */}
         <div className="p-6">
-          {activeSection === 'overview' && <OverviewSection proposal={proposal} />}
-          {activeSection === 'approach' && <ApproachSection proposal={proposal} />}
-          {activeSection === 'expertise' && <ExpertiseSection proposal={proposal} />}
-          {activeSection === 'remote' && <RemoteWorkSection proposal={proposal} />}
+          {activeSection === 'challenges' && <ChallengesSection proposal={proposal} />}
+          {activeSection === 'design' && <DesignSection proposal={proposal} />}
+          {activeSection === 'talent' && <TalentSection proposal={proposal} />}
           {activeSection === 'outcome' && <OutcomeSection proposal={proposal} />}
-          {activeSection === 'risks' && <RisksSection proposal={proposal} />}
+          {activeSection === 'implementation' && <ImplementationSection proposal={proposal} />}
         </div>
       </div>
 
@@ -123,208 +121,270 @@ const ProjectProposal = ({ proposal, onReset }) => {
   );
 };
 
-const OverviewSection = ({ proposal }) => {
-  console.log('OverviewSection proposal:', proposal);
-  console.log('projectDefinition:', proposal.projectDefinition);
-  
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-blue-50 rounded-lg p-6">
-          <div className="flex items-center space-x-2 mb-3">
-            <Target className="h-5 w-5 text-blue-600" />
-            <h3 className="font-semibold text-blue-900">プロジェクト目標</h3>
-          </div>
-          <p className="text-blue-800">{proposal.projectDefinition?.goalDescription || proposal.companyAnalysis?.summary || 'データが見つかりません'}</p>
-        </div>
-
-        <div className="bg-green-50 rounded-lg p-6">
-          <div className="flex items-center space-x-2 mb-3">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            <h3 className="font-semibold text-green-900">成功基準</h3>
-          </div>
-          <p className="text-green-800">{proposal.projectDefinition?.successCriteria || proposal.projectProposal?.duration || 'データが見つかりません'}</p>
-        </div>
-      </div>
-
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <div className="flex items-center space-x-2 mb-3">
-          <Clock className="h-5 w-5 text-gray-600" />
-          <h3 className="font-semibold text-gray-900">実施期間</h3>
-        </div>
-        <p className="text-gray-700">{proposal.projectDefinition?.timeline || proposal.projectProposal?.duration || 'データが見つかりません'}</p>
-      </div>
-    </div>
-  );
-};
-
-const ApproachSection = ({ proposal }) => {
-  console.log('ApproachSection integratedApproach:', proposal.integratedApproach);
-  
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <div className="bg-purple-50 rounded-lg p-4">
-            <h4 className="font-semibold text-purple-900 mb-2">戦略立案フェーズ</h4>
-            <p className="text-purple-800 text-sm">{proposal.integratedApproach?.strategicPlanning || proposal.challenges?.approach || 'データが見つかりません'}</p>
-          </div>
-          
-          <div className="bg-yellow-50 rounded-lg p-4">
-            <h4 className="font-semibold text-yellow-900 mb-2">実行・運用フェーズ</h4>
-            <p className="text-yellow-800 text-sm">{proposal.integratedApproach?.execution || proposal.challenges?.primary || 'データが見つかりません'}</p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="bg-cyan-50 rounded-lg p-4">
-            <h4 className="font-semibold text-cyan-900 mb-2">分析・最適化フェーズ</h4>
-            <p className="text-cyan-800 text-sm">{proposal.integratedApproach?.analysis || proposal.companyAnalysis?.strengths?.join(', ') || 'データが見つかりません'}</p>
-          </div>
-          
-          <div className="bg-indigo-50 rounded-lg p-4">
-            <h4 className="font-semibold text-indigo-900 mb-2">実行ロードマップ</h4>
-            <p className="text-indigo-800 text-sm">{proposal.integratedApproach?.roadmap || proposal.executionPlan?.phases?.join(' → ') || 'データが見つかりません'}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const ExpertiseSection = ({ proposal }) => (
+const ChallengesSection = ({ proposal }) => (
   <div className="space-y-6">
-    <div className="bg-gradient-to-r from-primary-50 to-secondary-50 rounded-lg p-6">
-      <div className="flex items-center space-x-2 mb-3">
-        <Users className="h-5 w-5 text-primary-600" />
-        <h3 className="font-semibold text-primary-900">求める人材像</h3>
-      </div>
-      <p className="text-primary-800 mb-4">{proposal.requiredExpertise?.roleDefinition || proposal.recommendedTalent?.profile || 'データが見つかりません'}</p>
-      <p className="text-sm text-primary-700">
-        <strong>経験レベル:</strong> {proposal.requiredExpertise?.experienceLevel || proposal.recommendedTalent?.experience || 'データが見つかりません'}
-      </p>
+    <div className="text-center mb-6">
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">Tab1: 課題整理（自動生成）</h3>
+      <p className="text-sm text-gray-600">現状分析、課題マッピング、課題の深掘りを表示します</p>
     </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h4 className="font-semibold text-gray-900 mb-3">必要スキルセット</h4>
-        <div className="space-y-2">
-          {(proposal.requiredExpertise?.skillSet || proposal.recommendedTalent?.skills)?.map((skill, index) => (
-            <div key={index} className="flex items-center space-x-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
-              <span className="text-sm text-gray-700">{skill}</span>
-            </div>
-          )) || <p className="text-gray-500">データが見つかりません</p>}
+    {/* 現状分析 */}
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div className="bg-blue-50 px-6 py-4 border-b border-gray-200">
+        <h4 className="text-lg font-semibold text-blue-900">現状分析</h4>
+      </div>
+      <div className="p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-blue-50 rounded-lg p-4">
+            <h5 className="font-semibold text-blue-900 mb-2">企業名</h5>
+            <p className="text-blue-800 text-sm font-medium">{proposal.challengeAnalysis?.companyName || 'データが見つかりません'}</p>
+          </div>
+          <div className="bg-green-50 rounded-lg p-4">
+            <h5 className="font-semibold text-green-900 mb-2">業界</h5>
+            <p className="text-green-800 text-sm">{proposal.challengeAnalysis?.industryName || 'データが見つかりません'}</p>
+          </div>
+          <div className="bg-purple-50 rounded-lg p-4">
+            <h5 className="font-semibold text-purple-900 mb-2">従業員数</h5>
+            <p className="text-purple-800 text-sm">{proposal.challengeAnalysis?.employeeCount || 'データが見つかりません'}</p>
+          </div>
         </div>
       </div>
+    </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h4 className="font-semibold text-gray-900 mb-3">想定される人材タイプ</h4>
-        <div className="space-y-2 text-sm text-gray-600">
-          <p>• 戦略コンサルティングファーム出身者</p>
-          <p>• 事業会社での実行経験豊富な専門家</p>
-          <p>• スタートアップでの横断的業務経験者</p>
-          <p>• フリーランスとしての専門性保有者</p>
+    {/* 課題マッピング */}
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div className="bg-yellow-50 px-6 py-4 border-b border-gray-200">
+        <h4 className="text-lg font-semibold text-yellow-900">課題マッピング</h4>
+      </div>
+      <div className="p-6">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-900">領域</th>
+                <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-900">現状</th>
+                <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-900">理想</th>
+                <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-900">ギャップ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {proposal.challengeAnalysis?.challengeMapping?.map((row, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="border border-gray-300 px-4 py-3 font-medium text-gray-900">{row.area}</td>
+                  <td className="border border-gray-300 px-4 py-3 text-gray-700 text-sm">{row.current}</td>
+                  <td className="border border-gray-300 px-4 py-3 text-gray-700 text-sm">{row.ideal}</td>
+                  <td className="border border-gray-300 px-4 py-3 text-gray-700 text-sm">{row.gap}</td>
+                </tr>
+              )) || (
+                <tr>
+                  <td colSpan="4" className="border border-gray-300 px-4 py-3 text-center text-gray-500">
+                    データが見つかりません
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    {/* 課題の深掘り */}
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div className="bg-red-50 px-6 py-4 border-b border-gray-200">
+        <h4 className="text-lg font-semibold text-red-900">課題の深掘り</h4>
+      </div>
+      <div className="p-6 space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-red-50 rounded-lg p-4">
+            <h5 className="font-semibold text-red-900 mb-2">表面的な課題</h5>
+            <p className="text-red-800 text-sm">{proposal.challengeAnalysis?.surfaceChallenges || 'データが見つかりません'}</p>
+          </div>
+          <div className="bg-orange-50 rounded-lg p-4">
+            <h5 className="font-semibold text-orange-900 mb-2">本質的な課題</h5>
+            <p className="text-orange-800 text-sm">{proposal.challengeAnalysis?.rootChallenges || 'データが見つかりません'}</p>
+          </div>
+        </div>
+        
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h5 className="font-semibold text-gray-900 mb-3">放置した場合の影響</h5>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-yellow-100 rounded p-3">
+              <h6 className="font-medium text-yellow-900 text-sm mb-1">短期（3ヶ月）</h6>
+              <p className="text-yellow-800 text-xs">{proposal.challengeAnalysis?.impactRisks?.shortTerm || 'データが見つかりません'}</p>
+            </div>
+            <div className="bg-orange-100 rounded p-3">
+              <h6 className="font-medium text-orange-900 text-sm mb-1">中期（6ヶ月）</h6>
+              <p className="text-orange-800 text-xs">{proposal.challengeAnalysis?.impactRisks?.mediumTerm || 'データが見つかりません'}</p>
+            </div>
+            <div className="bg-red-100 rounded p-3">
+              <h6 className="font-medium text-red-900 text-sm mb-1">長期（1年）</h6>
+              <p className="text-red-800 text-xs">{proposal.challengeAnalysis?.impactRisks?.longTerm || 'データが見つかりません'}</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 );
 
-const RemoteWorkSection = ({ proposal }) => (
+const DesignSection = ({ proposal }) => (
   <div className="space-y-6">
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="bg-blue-50 rounded-lg p-6">
-        <div className="flex items-center space-x-2 mb-3">
-          <Calendar className="h-5 w-5 text-blue-600" />
-          <h3 className="font-semibold text-blue-900">コミュニケーション</h3>
-        </div>
-        <p className="text-blue-800 text-sm">{proposal.remoteWorkPlan?.communicationFrequency || 'データが見つかりません'}</p>
-      </div>
+    <div className="text-center mb-6">
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">Tab2: プロジェクト設計（自動生成）</h3>
+      <p className="text-sm text-gray-600">プロジェクト概要、スコープ定義、フェーズ設計を表示します</p>
+    </div>
 
-      <div className="bg-green-50 rounded-lg p-6">
-        <div className="flex items-center space-x-2 mb-3">
-          <FileText className="h-5 w-5 text-green-600" />
-          <h3 className="font-semibold text-green-900">成果物・進捗管理</h3>
-        </div>
-        <p className="text-green-800 text-sm">{proposal.remoteWorkPlan?.deliverables || 'データが見つかりません'}</p>
+    {/* プロジェクト概要 */}
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div className="bg-purple-50 px-6 py-4 border-b border-gray-200">
+        <h4 className="text-lg font-semibold text-purple-900">プロジェクト概要</h4>
       </div>
+      <div className="p-6 space-y-4">
+        <div className="bg-purple-50 rounded-lg p-4">
+          <h5 className="font-semibold text-purple-900 mb-2">ミッション</h5>
+          <p className="text-purple-800 text-sm">{proposal.projectDesign?.mission || 'データが見つかりません'}</p>
+        </div>
+      </div>
+    </div>
 
-      <div className="bg-purple-50 rounded-lg p-6">
-        <div className="flex items-center space-x-2 mb-3">
-          <MessageSquare className="h-5 w-5 text-purple-600" />
-          <h3 className="font-semibold text-purple-900">コラボレーションツール</h3>
-        </div>
-        <p className="text-purple-800 text-sm">{proposal.remoteWorkPlan?.collaborationTools || 'データが見つかりません'}</p>
+    {/* スコープ定義 */}
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div className="bg-teal-50 px-6 py-4 border-b border-gray-200">
+        <h4 className="text-lg font-semibold text-teal-900">スコープ定義</h4>
       </div>
+      <div className="p-6 space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-green-50 rounded-lg p-4">
+            <h5 className="font-semibold text-green-900 mb-3">含むもの</h5>
+            <div className="space-y-2">
+              {proposal.projectDesign?.scopeIncluded?.map((item, index) => (
+                <div key={index} className="flex items-start space-x-2">
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <p className="text-green-800 text-sm">{item}</p>
+                </div>
+              )) || <p className="text-green-500 text-sm">データが見つかりません</p>}
+            </div>
+          </div>
+          <div className="bg-red-50 rounded-lg p-4">
+            <h5 className="font-semibold text-red-900 mb-3">含まないもの</h5>
+            <div className="space-y-2">
+              {proposal.projectDesign?.scopeExcluded?.map((item, index) => (
+                <div key={index} className="flex items-start space-x-2">
+                  <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                  <p className="text-red-800 text-sm">{item}</p>
+                </div>
+              )) || <p className="text-red-500 text-sm">データが見つかりません</p>}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* フェーズ設計 */}
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div className="bg-blue-50 px-6 py-4 border-b border-gray-200">
+        <h4 className="text-lg font-semibold text-blue-900">フェーズ設計</h4>
+      </div>
+      <div className="p-6 space-y-6">
+        {proposal.projectDesign?.phases?.map((phase, index) => (
+          <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
+            <div className="bg-indigo-50 px-4 py-3 border-b border-gray-200">
+              <h5 className="font-semibold text-indigo-900">
+                Phase {index + 1}: {phase.name} ({phase.period})
+              </h5>
+            </div>
+            <div className="p-4 space-y-4">
+              <div className="bg-indigo-50 rounded-lg p-3">
+                <h6 className="font-medium text-indigo-900 mb-1">目的</h6>
+                <p className="text-indigo-800 text-sm">{phase.purpose}</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <h6 className="font-medium text-gray-900 mb-2">主要タスク</h6>
+                  <div className="space-y-2">
+                    {phase.tasks?.map((task, taskIndex) => (
+                      <div key={taskIndex} className="bg-white rounded p-2">
+                        <p className="font-medium text-gray-900 text-sm">{task.name}</p>
+                        <p className="text-gray-600 text-xs mt-1">詳細: {task.detail}</p>
+                        <p className="text-gray-500 text-xs">期限: {task.deadline}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="bg-yellow-50 rounded-lg p-3">
+                    <h6 className="font-medium text-yellow-900 mb-2">成果物</h6>
+                    <div className="space-y-1">
+                      {phase.deliverables?.map((deliverable, delIndex) => (
+                        <p key={delIndex} className="text-yellow-800 text-sm">{deliverable}</p>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-green-50 rounded-lg p-3">
+                    <h6 className="font-medium text-green-900 mb-1">マイルストーン</h6>
+                    <p className="text-green-800 text-sm">{phase.milestone}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )) || (
+          <div className="text-center py-6">
+            <p className="text-gray-500">フェーズデータが見つかりません</p>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
+const TalentSection = ({ proposal }) => (
+  <div className="space-y-6">
+    <div className="text-center mb-6">
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">Tab3: 人材提案（手動生成）</h3>
+      <p className="text-sm text-gray-600">人材要件定義、人材タイプ提案、稼働条件を生成します</p>
+    </div>
+    <div className="bg-gray-100 rounded-lg p-6 text-center">
+      <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors mb-4">
+        AI分析で生成
+      </button>
+      <p className="text-gray-500">ボタンをクリックして人材提案を生成してください</p>
+    </div>
+  </div>
+);
+
+const ImplementationSection = ({ proposal }) => (
+  <div className="space-y-6">
+    <div className="text-center mb-6">
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">Tab5: 実施要項（手動生成）</h3>
+      <p className="text-sm text-gray-600">契約形態、費用構造、実施体制を生成します</p>
+    </div>
+    <div className="bg-gray-100 rounded-lg p-6 text-center">
+      <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors mb-4">
+        AI分析で生成
+      </button>
+      <p className="text-gray-500">ボタンをクリックして実施要項を生成してください</p>
     </div>
   </div>
 );
 
 const OutcomeSection = ({ proposal }) => (
   <div className="space-y-6">
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="bg-green-50 rounded-lg p-6">
-        <div className="flex items-center space-x-2 mb-3">
-          <TrendingUp className="h-5 w-5 text-green-600" />
-          <h3 className="font-semibold text-green-900">短期的成果 (1-3ヶ月)</h3>
-        </div>
-        <p className="text-green-800 text-sm">{proposal.expectedOutcome?.shortTerm || 'データが見つかりません'}</p>
-      </div>
-
-      <div className="bg-blue-50 rounded-lg p-6">
-        <div className="flex items-center space-x-2 mb-3">
-          <Target className="h-5 w-5 text-blue-600" />
-          <h3 className="font-semibold text-blue-900">中期的成果 (3-6ヶ月)</h3>
-        </div>
-        <p className="text-blue-800 text-sm">{proposal.expectedOutcome?.mediumTerm || 'データが見つかりません'}</p>
-      </div>
-
-      <div className="bg-purple-50 rounded-lg p-6">
-        <div className="flex items-center space-x-2 mb-3">
-          <Star className="h-5 w-5 text-purple-600" />
-          <h3 className="font-semibold text-purple-900">長期的成果 (6ヶ月以上)</h3>
-        </div>
-        <p className="text-purple-800 text-sm">{proposal.expectedOutcome?.longTerm || 'データが見つかりません'}</p>
-      </div>
+    <div className="text-center mb-6">
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">Tab4: 期待成果（手動生成）</h3>
+      <p className="text-sm text-gray-600">定量的成果、定性的成果、時系列効果を生成します</p>
+    </div>
+    <div className="bg-gray-100 rounded-lg p-6 text-center">
+      <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors mb-4">
+        AI分析で生成
+      </button>
+      <p className="text-gray-500">ボタンをクリックして期待成果を生成してください</p>
     </div>
   </div>
 );
 
-const RisksSection = ({ proposal }) => (
-  <div className="space-y-6">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="bg-red-50 rounded-lg p-6">
-        <div className="flex items-center space-x-2 mb-3">
-          <AlertTriangle className="h-5 w-5 text-red-600" />
-          <h3 className="font-semibold text-red-900">想定される課題</h3>
-        </div>
-        <div className="space-y-2">
-          {proposal.riskMitigation?.potentialChallenges?.map((challenge, index) => (
-            <div key={index} className="flex items-start space-x-2">
-              <div className="w-2 h-2 bg-red-400 rounded-full mt-2 flex-shrink-0"></div>
-              <p className="text-red-800 text-sm">{challenge}</p>
-            </div>
-          )) || <p className="text-red-500">データが見つかりません</p>}
-        </div>
-      </div>
-
-      <div className="bg-blue-50 rounded-lg p-6">
-        <div className="flex items-center space-x-2 mb-3">
-          <CheckCircle className="h-5 w-5 text-blue-600" />
-          <h3 className="font-semibold text-blue-900">対策・軽減策</h3>
-        </div>
-        <div className="space-y-2">
-          {proposal.riskMitigation?.mitigationStrategies?.map((strategy, index) => (
-            <div key={index} className="flex items-start space-x-2">
-              <CheckCircle className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
-              <p className="text-blue-800 text-sm">{strategy}</p>
-            </div>
-          )) || <p className="text-blue-500">データが見つかりません</p>}
-        </div>
-      </div>
-    </div>
-  </div>
-);
 
 export default ProjectProposal;

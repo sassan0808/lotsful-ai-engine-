@@ -111,7 +111,7 @@ const BusinessMatrix = ({ selectedItems, onSelectionChange, workingHours, onWork
           </span>
         </div>
         <div className="mt-2 text-sm text-gray-500">
-          副業人材の一般的な稼働時間: 20-40時間/月
+          副業/兼業人材の一般的な稼働時間: 10-80時間/月（推奨30時間）
         </div>
       </div>
 
