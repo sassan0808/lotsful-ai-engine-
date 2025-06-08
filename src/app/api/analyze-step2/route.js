@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 
 export async function POST(request) {
+  let requestData;
+  
   try {
-    const { template, focusAreas, freeText } = await request.json();
+    // リクエストデータを一度だけパース
+    requestData = await request.json();
+    const { template, focusAreas, freeText } = requestData;
     
     // 必須フィールドの検証
     if (!template) {
@@ -62,49 +66,57 @@ export async function POST(request) {
   } catch (error) {
     console.error('Step2 Analysis API error:', error);
     
-    // エラー時はモックデータを返す
-    try {
-      const { template } = await request.json();
-      return NextResponse.json(generateMockStep2Analysis(template));
-    } catch (parseError) {
-      console.error('Failed to parse request JSON for fallback:', parseError);
-      return NextResponse.json({ error: 'Analysis failed and unable to generate fallback data' }, { status: 500 });
+    // エラー時はモックデータを返す（requestDataが利用可能な場合）
+    if (requestData?.template) {
+      console.log('Returning mock data as fallback');
+      return NextResponse.json(generateMockStep2Analysis(requestData.template));
+    } else {
+      console.error('Unable to parse request data for fallback');
+      return NextResponse.json(
+        { error: 'Analysis failed and unable to generate fallback data' }, 
+        { status: 500 }
+      );
     }
   }
 }
 
 function createStep2AnalysisPrompt(template, focusAreas = ['currentAnalysis', 'projectDesign'], freeText = '') {
+  // テンプレートオブジェクトの存在性チェック
+  if (!template) {
+    throw new Error('Template object is required');
+  }
+
   const companyInfo = `
-企業名: ${template.companyProfile.name || '情報不足により特定不可'}
-業界: ${template.companyProfile.industry.join(', ') || '情報不足により特定不可'}
-従業員数: ${template.companyProfile.employeeCount || '情報不足により特定不可'}
-事業内容: ${template.companyProfile.businessDescription || '情報不足により特定不可'}
+企業名: ${template.companyProfile?.name || '情報不足により特定不可'}
+業界: ${template.companyProfile?.industry?.join(', ') || '情報不足により特定不可'}
+従業員数: ${template.companyProfile?.employeeCount || '情報不足により特定不可'}
+事業内容: ${template.companyProfile?.businessDescription || '情報不足により特定不可'}
 `;
 
   const researchInfo = `
-ディープリサーチ: ${template.researchData.deepResearchMemo || '情報なし'}
-最近の動き: ${template.researchData.recentNews || '情報なし'}
-組織特徴: ${template.researchData.organizationCulture || '情報なし'}
-仮説・洞察: ${template.researchData.hypothesisInsights || '情報なし'}
+ディープリサーチ: ${template.researchData?.deepResearchMemo || '情報なし'}
+最近の動き: ${template.researchData?.recentNews || '情報なし'}
+組織特徴: ${template.researchData?.organizationCulture || '情報なし'}
+仮説・洞察: ${template.researchData?.hypothesisInsights || '情報なし'}
 `;
 
   const currentInfo = `
-事業フェーズ: ${template.currentAnalysis.businessPhase || '情報なし'}
-これまでの取り組み: ${template.currentAnalysis.previousEfforts || '情報なし'}
-失敗理由: ${template.currentAnalysis.failureReasons || '情報なし'}
-不足スキル: ${template.currentAnalysis.missingSkills.join(', ') || '情報なし'}
-外部人材経験: ${template.currentAnalysis.externalTalentExperience || '情報なし'}
+事業フェーズ: ${template.currentAnalysis?.businessPhase || '情報なし'}
+これまでの取り組み: ${template.currentAnalysis?.previousEfforts || '情報なし'}
+失敗理由: ${template.currentAnalysis?.failureReasons || '情報なし'}
+不足スキル: ${template.currentAnalysis?.missingSkills?.join(', ') || '情報なし'}
+外部人材経験: ${template.currentAnalysis?.externalTalentExperience || '情報なし'}
 `;
 
   const projectInfo = `
-課題要約: ${template.projectDesign.challengeSummary || '情報なし'}
-緊急性理由: ${template.projectDesign.urgencyReason || '情報なし'}
-理想状態: ${template.projectDesign.idealState3Months || '情報なし'}
-期待成果物: ${template.projectDesign.deliverables.join(', ') || '情報なし'}
-稼働イメージ: ${template.projectDesign.workingHours || '情報なし'}
+課題要約: ${template.projectDesign?.challengeSummary || '情報なし'}
+緊急性理由: ${template.projectDesign?.urgencyReason || '情報なし'}
+理想状態: ${template.projectDesign?.idealState3Months || '情報なし'}
+期待成果物: ${template.projectDesign?.deliverables?.join(', ') || '情報なし'}
+稼働イメージ: ${template.projectDesign?.workingHours || '情報なし'}
 `;
 
-  const freeTextSection = freeText.trim() ? `
+  const freeTextSection = (freeText && freeText.trim()) ? `
 ## 追加情報（商談議事録・ヒアリング内容）
 ${freeText}
 ` : '';
@@ -127,7 +139,7 @@ ${projectInfo}
 ## 分析指示
 以下の形式で、不足している情報の補完と深掘り分析を行ってください。
 既に入力されている情報は活かしつつ、不足部分を補ってください。
-${freeText.trim() ? '**特に追加情報（商談議事録等）の内容を重視して分析してください。**' : ''}
+${(freeText && freeText.trim()) ? '**特に追加情報（商談議事録等）の内容を重視して分析してください。**' : ''}
 
 ### 現状分析補完
 事業フェーズ分析：[企業の現在の成長段階と特徴を分析]
@@ -154,17 +166,21 @@ ${freeText.trim() ? '**特に追加情報（商談議事録等）の内容を重
 }
 
 function parseStep2Response(text, originalTemplate) {
+  // テンプレートの安全な参照
+  const currentAnalysis = originalTemplate?.currentAnalysis || {};
+  const projectDesign = originalTemplate?.projectDesign || {};
+  
   return {
     currentAnalysis: {
-      businessPhase: originalTemplate.currentAnalysis.businessPhase || extractBusinessPhase(text),
+      businessPhase: currentAnalysis.businessPhase || extractBusinessPhase(text),
       challengeCategories: extractChallengeCategories(text),
-      previousEfforts: originalTemplate.currentAnalysis.previousEfforts || extractSection(text, 'これまでの取り組み'),
-      failureReasons: originalTemplate.currentAnalysis.failureReasons || extractSection(text, 'うまくいかなかった理由'),
+      previousEfforts: currentAnalysis.previousEfforts || extractSection(text, 'これまでの取り組み'),
+      failureReasons: currentAnalysis.failureReasons || extractSection(text, 'うまくいかなかった理由'),
       teamComposition: extractTeamComposition(text),
-      missingSkills: originalTemplate.currentAnalysis.missingSkills.length > 0 
-        ? originalTemplate.currentAnalysis.missingSkills 
+      missingSkills: (currentAnalysis.missingSkills && currentAnalysis.missingSkills.length > 0) 
+        ? currentAnalysis.missingSkills 
         : extractMissingSkills(text),
-      externalTalentExperience: originalTemplate.currentAnalysis.externalTalentExperience || '',
+      externalTalentExperience: currentAnalysis.externalTalentExperience || '',
       externalTalentResult: '',
       freelanceReadiness: extractFreelanceReadiness(text),
       freelanceReadinessDetails: extractSection(text, '副業受け入れ体制') || '詳細な情報収集が必要',
@@ -174,18 +190,18 @@ function parseStep2Response(text, originalTemplate) {
       barriers: []
     },
     projectDesign: {
-      challengeSummary: originalTemplate.projectDesign.challengeSummary || extractSection(text, '課題の背景分析'),
-      urgencyReason: originalTemplate.projectDesign.urgencyReason || extractSection(text, '緊急性理由'),
+      challengeSummary: projectDesign.challengeSummary || extractSection(text, '課題の背景分析'),
+      urgencyReason: projectDesign.urgencyReason || extractSection(text, '緊急性理由'),
       risksIfIgnored: extractSection(text, '放置リスク分析') || '詳細な情報収集が必要',
-      idealState3Months: originalTemplate.projectDesign.idealState3Months || '詳細な情報収集が必要',
+      idealState3Months: projectDesign.idealState3Months || '詳細な情報収集が必要',
       successMetrics: extractSuccessMetrics(text),
-      deliverables: originalTemplate.projectDesign.deliverables.length > 0 
-        ? originalTemplate.projectDesign.deliverables 
+      deliverables: (projectDesign.deliverables && projectDesign.deliverables.length > 0) 
+        ? projectDesign.deliverables 
         : extractDeliverables(text),
       scope: extractProjectScope(text),
       phases: extractProjectPhases(text),
-      workingHours: originalTemplate.projectDesign.workingHours || '',
-      budget: originalTemplate.projectDesign.budget
+      workingHours: projectDesign.workingHours || '',
+      budget: projectDesign.budget || { monthlyBudget: 0, duration: 0, totalBudget: 0 }
     },
     metadata: {
       step2Completed: true,
@@ -319,23 +335,26 @@ function extractSection(text, sectionName) {
 }
 
 function generateMockStep2Analysis(template) {
+  const currentAnalysis = template?.currentAnalysis || {};
+  const projectDesign = template?.projectDesign || {};
+  
   return {
     currentAnalysis: {
-      businessPhase: template.currentAnalysis.businessPhase || 'growth',
-      challengeCategories: template.currentAnalysis.challengeCategories.length > 0 
-        ? template.currentAnalysis.challengeCategories 
+      businessPhase: currentAnalysis.businessPhase || 'growth',
+      challengeCategories: (currentAnalysis.challengeCategories && currentAnalysis.challengeCategories.length > 0) 
+        ? currentAnalysis.challengeCategories 
         : ['組織スケール', 'プロセス効率化', 'データ活用'],
-      previousEfforts: template.currentAnalysis.previousEfforts || '詳細な情報収集が必要です',
-      failureReasons: template.currentAnalysis.failureReasons || '根本原因の特定には追加ヒアリングが必要',
+      previousEfforts: currentAnalysis.previousEfforts || '詳細な情報収集が必要です',
+      failureReasons: currentAnalysis.failureReasons || '根本原因の特定には追加ヒアリングが必要',
       teamComposition: [{
         department: '推定営業部',
         headcount: 5,
         mainRole: '新規開拓と既存顧客対応'
       }],
-      missingSkills: template.currentAnalysis.missingSkills.length > 0 
-        ? template.currentAnalysis.missingSkills 
+      missingSkills: (currentAnalysis.missingSkills && currentAnalysis.missingSkills.length > 0) 
+        ? currentAnalysis.missingSkills 
         : ['データ分析スキル', 'マーケティング自動化', 'プロジェクト管理'],
-      externalTalentExperience: template.currentAnalysis.externalTalentExperience || 'none',
+      externalTalentExperience: currentAnalysis.externalTalentExperience || 'none',
       externalTalentResult: '詳細な経験内容の確認が必要',
       freelanceReadiness: 'partial',
       freelanceReadinessDetails: '基本的な受け入れ体制は整っているが、運用ルールの明文化が必要',
@@ -345,16 +364,16 @@ function generateMockStep2Analysis(template) {
       barriers: ['予算調整', '社内理解促進']
     },
     projectDesign: {
-      challengeSummary: template.projectDesign.challengeSummary || '事業成長に伴う組織スケールとプロセス最適化の課題',
-      urgencyReason: template.projectDesign.urgencyReason || '競合他社との差別化と市場シェア確保のため',
+      challengeSummary: projectDesign.challengeSummary || '事業成長に伴う組織スケールとプロセス最適化の課題',
+      urgencyReason: projectDesign.urgencyReason || '競合他社との差別化と市場シェア確保のため',
       risksIfIgnored: '機会損失の拡大、組織効率の低下、競争力の減退',
-      idealState3Months: template.projectDesign.idealState3Months || 'データ活用による意思決定の高速化と業務プロセスの標準化',
+      idealState3Months: projectDesign.idealState3Months || 'データ活用による意思決定の高速化と業務プロセスの標準化',
       successMetrics: {
         quantitative: ['業務効率20%向上', 'リードタイム30%短縮'],
         qualitative: ['チーム連携の円滑化', '意思決定スピードの向上']
       },
-      deliverables: template.projectDesign.deliverables.length > 0 
-        ? template.projectDesign.deliverables 
+      deliverables: (projectDesign.deliverables && projectDesign.deliverables.length > 0) 
+        ? projectDesign.deliverables 
         : ['現状分析レポート', '改善提案書', '実行ロードマップ'],
       scope: {
         included: ['業務プロセス分析', 'ツール導入支援', '運用ルール策定'],
@@ -366,9 +385,9 @@ function generateMockStep2Analysis(template) {
         goal: '詳細な現状分析と改善戦略の策定',
         mainActivities: ['業務フロー分析', 'ボトルネック特定', '改善案策定']
       }],
-      workingHours: template.projectDesign.workingHours || 'standard_20h',
-      budget: template.projectDesign.budget.monthlyBudget > 0 
-        ? template.projectDesign.budget 
+      workingHours: projectDesign.workingHours || 'standard_20h',
+      budget: (projectDesign.budget && projectDesign.budget.monthlyBudget > 0) 
+        ? projectDesign.budget 
         : { monthlyBudget: 50, duration: 3, totalBudget: 150 }
     },
     metadata: {
