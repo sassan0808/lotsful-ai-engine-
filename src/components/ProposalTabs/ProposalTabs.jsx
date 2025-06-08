@@ -337,7 +337,13 @@ const TalentProposalTab = ({ talentProposal, onGenerate, isGenerating }) => {
     );
   }
 
-  return <TalentProposal proposal={talentProposal} />;
+  return (
+    <TalentProposal 
+      proposal={talentProposal} 
+      onExport={() => console.log('Export from TalentProposal')}
+      onShare={() => console.log('Share from TalentProposal')}
+    />
+  );
 };
 
 // Tab 4: 期待成果（プレースホルダー）

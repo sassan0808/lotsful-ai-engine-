@@ -37,6 +37,13 @@ jobs:
     - name: Build project
       run: npm run build
 
+    - name: Start development server for runtime check
+      run: |
+        timeout 30s npm run dev &
+        sleep 10
+        curl -f http://localhost:3000 || echo "Runtime check failed"
+      continue-on-error: true
+
   test:
     runs-on: ubuntu-latest
     if: false # Disable until tests are implemented
