@@ -15,6 +15,12 @@ export async function POST(request) {
       );
     }
 
+    // API Key の検証
+    if (!GEMINI_API_KEY || GEMINI_API_KEY === 'your_gemini_api_key_here') {
+      console.warn('GEMINI_API_KEY not configured properly, using fallback');
+      throw new Error('GEMINI_API_KEY not configured');
+    }
+
     const prompt = `
 あなたは経営コンサルタントとして、企業の業務切り出し・副業/兼業人材活用の提案を行います。
 以下の蓄積された情報を基に、包括的な5タブ提案書のうち、Tab1（課題整理）とTab2（プロジェクト設計）を生成してください。

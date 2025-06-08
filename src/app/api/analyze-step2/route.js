@@ -14,8 +14,8 @@ export async function POST(request) {
 
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
     
-    if (!GEMINI_API_KEY) {
-      console.warn('GEMINI_API_KEY not found, using mock data');
+    if (!GEMINI_API_KEY || GEMINI_API_KEY === 'your_gemini_api_key_here') {
+      console.warn('GEMINI_API_KEY not configured properly, using mock data');
       return NextResponse.json(generateMockStep2Analysis(template));
     }
 
