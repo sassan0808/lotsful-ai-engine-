@@ -23,11 +23,17 @@ const ProposalTabs = ({ template, analysisResult, onExport, onShare }) => {
 
   // 人材提案生成
   const handleGenerateTalentProposal = async () => {
-    console.log('人材提案生成開始');
+    console.log('=== TALENT PROPOSAL GENERATION START ===');
+    console.log('Function called successfully!');
     console.log('Template data:', template);
+    console.log('isGeneratingTalent before:', isGeneratingTalent);
+    
     setIsGeneratingTalent(true);
+    console.log('setIsGeneratingTalent(true) called');
     
     try {
+      console.log('Starting API call to /api/generate-talent-proposal');
+      
       const response = await fetch('/api/generate-talent-proposal', {
         method: 'POST',
         headers: {
@@ -38,18 +44,24 @@ const ProposalTabs = ({ template, analysisResult, onExport, onShare }) => {
         })
       });
 
+      console.log('API response status:', response.status);
+      console.log('API response ok:', response.ok);
+
       if (!response.ok) {
-        throw new Error('Talent proposal generation failed');
+        throw new Error(`Talent proposal generation failed: ${response.status}`);
       }
 
       const result = await response.json();
-      console.log('Talent proposal generated:', result);
+      console.log('Talent proposal generated successfully:', result);
       setTalentProposal(result.talentProposal);
+      console.log('setTalentProposal called with:', result.talentProposal);
     } catch (error) {
       console.error('Talent proposal generation error:', error);
-      alert('人材提案の生成に失敗しました。');
+      alert('人材提案の生成に失敗しました: ' + error.message);
     } finally {
       setIsGeneratingTalent(false);
+      console.log('setIsGeneratingTalent(false) called');
+      console.log('=== TALENT PROPOSAL GENERATION END ===');
     }
   };
 
@@ -296,14 +308,26 @@ const ProjectDesignTab = ({ template, analysisResult }) => {
 
 // Tab 3: 人材提案
 const TalentProposalTab = ({ talentProposal, onGenerate, isGenerating }) => {
-  const handleClick = () => {
-    console.log('ボタンがクリックされました');
+  const handleClick = (e) => {
+    console.log('=== BUTTON CLICK DEBUG ===');
+    console.log('Event:', e);
+    console.log('Event type:', e.type);
+    console.log('Target:', e.target);
     console.log('onGenerate:', typeof onGenerate);
+    console.log('onGenerate function:', onGenerate);
     console.log('isGenerating:', isGenerating);
-    if (onGenerate) {
+    console.log('talentProposal:', talentProposal);
+    console.log('=========================');
+    
+    // Prevent any default behavior
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (typeof onGenerate === 'function') {
+      console.log('Calling onGenerate function...');
       onGenerate();
     } else {
-      console.error('onGenerate function is not provided');
+      console.error('onGenerate is not a function:', onGenerate);
     }
   };
 
