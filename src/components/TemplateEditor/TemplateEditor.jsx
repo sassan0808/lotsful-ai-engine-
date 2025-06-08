@@ -7,13 +7,10 @@ import {
   Edit3, FileText, Users, MapPin, Calendar
 } from 'lucide-react';
 import { TemplateManager } from '../../utils/templateManager';
-import TalentProposal from '../TalentProposal/TalentProposal';
 
 const TemplateEditor = ({ onTemplateUpdate }) => {
   const [template, setTemplate] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isGeneratingProposal, setIsGeneratingProposal] = useState(false);
-  const [showTalentProposal, setShowTalentProposal] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     freeText: true,  // 自由記述欄を最上部に追加
     company: true,
@@ -220,54 +217,6 @@ const TemplateEditor = ({ onTemplateUpdate }) => {
     }
   };
 
-  // 人材提案生成
-  const handleGenerateTalentProposal = async () => {
-    if (!template) return;
-    
-    setIsGeneratingProposal(true);
-    
-    try {
-      const updatedTemplate = await TemplateManager.generateTalentProposal();
-      setTemplate(updatedTemplate);
-      setShowTalentProposal(true);
-      
-      if (onTemplateUpdate) {
-        onTemplateUpdate(updatedTemplate);
-      }
-    } catch (error) {
-      console.error('Talent proposal generation error:', error);
-      alert('人材提案の生成に失敗しました。しばらく時間をおいて再試行してください。');
-    } finally {
-      setIsGeneratingProposal(false);
-    }
-  };
-
-  // 人材提案のエクスポート
-  const handleExportProposal = () => {
-    if (!template?.matchingStrategy?.talentProposal) return;
-    
-    const exportData = {
-      companyName: template.companyProfile.name,
-      generatedDate: new Date().toISOString(),
-      talentProposal: template.matchingStrategy.talentProposal
-    };
-    
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `talent-proposal-${template.companyProfile.name || 'company'}-${Date.now()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  // 人材提案の共有
-  const handleShareProposal = () => {
-    // 将来的にはSlackやメール共有機能を実装
-    alert('共有機能は今後実装予定です');
-  };
 
   if (!template) {
     return (
@@ -456,65 +405,24 @@ AIが以下の項目を自動抽出・入力します：
           )}
         </div>
 
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={handleAIAnalysis}
-            disabled={isAnalyzing}
-            className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            {isAnalyzing ? (
-              <>
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>AI分析中...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-5 w-5" />
-                <span>AI分析で情報補完</span>
-              </>
-            )}
-          </button>
-
-          <button
-            onClick={handleGenerateTalentProposal}
-            disabled={isGeneratingProposal}
-            className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            {isGeneratingProposal ? (
-              <>
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>人材提案生成中...</span>
-              </>
-            ) : (
-              <>
-                <Users className="h-5 w-5" />
-                <span>人材提案を生成</span>
-              </>
-            )}
-          </button>
-
-          {template?.matchingStrategy?.talentProposal && (
-            <button
-              onClick={() => setShowTalentProposal(!showTalentProposal)}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all"
-            >
-              <Users className="h-4 w-4" />
-              <span>{showTalentProposal ? '提案を非表示' : '提案を表示'}</span>
-            </button>
+        <button
+          onClick={handleAIAnalysis}
+          disabled={isAnalyzing}
+          className="flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+        >
+          {isAnalyzing ? (
+            <>
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span>AI分析中...</span>
+            </>
+          ) : (
+            <>
+              <Sparkles className="h-5 w-5" />
+              <span>AI分析で情報補完</span>
+            </>
           )}
-        </div>
+        </button>
       </div>
-
-      {/* 人材提案表示 */}
-      {showTalentProposal && template?.matchingStrategy?.talentProposal && (
-        <div className="mt-8">
-          <TalentProposal 
-            proposal={template.matchingStrategy.talentProposal}
-            onExport={handleExportProposal}
-            onShare={handleShareProposal}
-          />
-        </div>
-      )}
     </div>
   );
 };

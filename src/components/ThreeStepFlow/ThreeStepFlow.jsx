@@ -8,6 +8,7 @@ import TemplateEditor from '../TemplateEditor/TemplateEditor';
 import IndustrySelector from '../IndustrySelector/IndustrySelector';
 import BusinessMatrix from '../BusinessMatrix/BusinessMatrix';
 import ProjectProposal from '../ProjectProposal/ProjectProposal';
+import ProposalTabs from '../ProposalTabs/ProposalTabs';
 import { analyzeWithGemini } from '../../utils/geminiAnalysisEngine';
 import { TemplateManager } from '../../utils/templateManager';
 
@@ -439,7 +440,7 @@ const ThreeStepFlow = () => {
       </div>
 
       {/* 分析準備完了メッセージ */}
-      {currentStep === 3 && canAnalyze() && !isAnalyzing && (
+      {currentStep === 3 && canAnalyze() && !isAnalyzing && !analysisResults && (
         <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
           <div className="flex items-center space-x-2">
             <CheckCircle className="h-5 w-5 text-green-600" />
@@ -447,6 +448,18 @@ const ThreeStepFlow = () => {
               分析準備完了！選択された情報を元にAIが最適なプロジェクト提案を生成します。
             </span>
           </div>
+        </div>
+      )}
+
+      {/* 5タブ提案書表示 */}
+      {analysisResults && (
+        <div className="mt-8">
+          <ProposalTabs 
+            template={template}
+            analysisResult={analysisResults}
+            onExport={() => alert('PDF出力機能は今後実装予定です')}
+            onShare={() => alert('共有機能は今後実装予定です')}
+          />
         </div>
       )}
     </div>
