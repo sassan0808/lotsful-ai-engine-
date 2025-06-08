@@ -146,6 +146,7 @@ export interface TemplateMetadata {
   }>;
   lastUpdated: string;
   version: string;
+  actualWorkingHours?: number; // 実際の稼働時間数値
 }
 
 // メインテンプレート構造

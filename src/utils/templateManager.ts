@@ -88,19 +88,33 @@ export class TemplateManager {
 
   // Step3の更新（業務選択項目）
   static updateStep3(template: LotsfulTemplate, stepData: { selectedBusinessItems: any[], workingHours: number }): LotsfulTemplate {
+    // 稼働時間を適切な型にマッピング
+    let workingHoursType: 'light_10h' | 'standard_20h' | 'commit_30h' | '' = '';
+    if (stepData.workingHours <= 10) {
+      workingHoursType = 'light_10h';
+    } else if (stepData.workingHours <= 20) {
+      workingHoursType = 'standard_20h';
+    } else if (stepData.workingHours <= 30) {
+      workingHoursType = 'commit_30h';
+    } else {
+      workingHoursType = 'commit_30h'; // 30時間以上も commit_30h とする
+    }
+
     const updates: PartialLotsfulTemplate = {
       metadata: {
         ...template.metadata,
         step3Completed: true,
         selectedBusinessItems: stepData.selectedBusinessItems,
+        // 実際の稼働時間数値もメタデータに保存
+        actualWorkingHours: stepData.workingHours,
       },
       projectDesign: {
         ...template.projectDesign,
-        workingHours: `月${stepData.workingHours}時間`,
+        workingHours: workingHoursType,
       },
     };
 
-    const updatedTemplate = this.mergeDeep(template, updates);
+    const updatedTemplate = this.deepMerge(template, updates);
     this.saveTemplate(updatedTemplate);
     return updatedTemplate;
   }
