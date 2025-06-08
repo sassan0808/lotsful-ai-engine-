@@ -168,23 +168,35 @@ const CompanyInfoInput = ({ companyInfo, onCompanyInfoChange }) => {
   };
 
   const sampleTexts = [
-    `株式会社テックイノベーション
-IT・テクノロジー企業
-従業員数: 50名
-主な事業: SaaS型クラウドサービスの開発・運営
-最近の動向: AI技術を活用した新サービスの開発を進めており、海外展開も検討中。DX推進により業務効率化を図っている。`,
-    
-    `グロースマーケティング合同会社
-デジタルマーケティング支援企業
-従業員数: 25名
-事業内容: D2C企業向けのマーケティング支援、EC事業のグロースハッキング
-近況: 急成長中のスタートアップで、資金調達を完了。チーム拡大を進めている。`,
-    
-    `ヘルステック・ジャパン株式会社
-ヘルスケアテクノロジー企業
-従業員: 80名
-サービス: 医療データ分析プラットフォーム、オンライン診療システム
-現状: 病院・クリニックへの導入が加速。規制対応と技術開発を並行して進行中。`
+    `パーソルイノベーション株式会社
+パーソルイノベーション株式会社は、パーソルグループの一員として2019年に設立された企業で、新規事業創出やオープンイノベーション推進を主な目的としています。同社は「はたらく」に関するサービスを中心に、社会課題の解決を目指しながら新たな価値を提供することを目指しています。
+
+特徴と役割：
+• 新規事業創出: パーソルグループ内で新規事業アイデアを提案できるプログラム「Drit」を運営し、社員のアイデアを具体化・事業化するための支援を行っています。
+• インキュベーションスタジオ: 事業化検証から成長までをサポートする体制を整備し、マーケティングやプロダクト開発、顧客獲得支援などを提供しています。
+• 豊富なアセット活用: パーソルグループのノウハウや顧客基盤、技術トレンドを活用し、事業開発を推進しています。
+
+事業内容：
+• 新規事業創造
+• オープンイノベーション推進
+• グループ会社の経営計画・管理
+
+サービス例：
+• TECH PLAY Academy
+• lotsful（副業マッチングサービス）
+• Reskilling Camp
+• 転職管理マイリストなど
+
+会社概要：
+• 設立年月: 2019年4月
+• 代表者: 大浦征也
+• 所在地: 東京都港区北青山2-9-5 スタジアムプレイス青山6階
+
+強み：
+• ベンチャー企業並みのスピード感と、大企業ならではの安定基盤を兼ね備えた環境
+• 社員のスキルアップを目的とした勉強会や生成AIの活用方法に関する情報共有など、最新技術への対応力
+
+パーソルイノベーション株式会社は、社会課題の解決を目指しながら、社員のアイデアを事業化するための支援を行い、革新的なサービスを生み出すことに注力しています。`
   ];
 
   return (
@@ -207,15 +219,12 @@ IT・テクノロジー企業
           <div className="flex-1">
             <p className="text-sm font-medium text-blue-900 mb-2">入力例</p>
             <div className="space-y-2">
-              {sampleTexts.map((sample, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleTextChange(sample)}
-                  className="text-left text-xs text-blue-700 hover:text-blue-900 hover:underline block w-full p-2 bg-white rounded border border-blue-200 hover:border-blue-300 transition-colors"
-                >
-                  {sample.split('\n')[0]}...
-                </button>
-              ))}
+              <button
+                onClick={() => handleTextChange(sampleTexts[0])}
+                className="text-left text-xs text-blue-700 hover:text-blue-900 hover:underline block w-full p-2 bg-white rounded border border-blue-200 hover:border-blue-300 transition-colors"
+              >
+                パーソルイノベーション株式会社...
+              </button>
             </div>
           </div>
         </div>

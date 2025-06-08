@@ -40,12 +40,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              企業情報から最適な業務切り出しプロジェクトを提案
+              lotsful 副業/兼業人材活用に最適な業務切りプロジェクト
             </h2>
-            <p className="text-lg text-gray-600 max-w-4xl mx-auto">
-              AIが企業の情報と課題を分析し、副業/兼業人材を活用した統合的なプロジェクトを自動設計。
-              リモートワーク中心、月10-80時間（デフォルト30時間）の制約下で最大の成果を生み出すプランを提案します。
-            </p>
           </div>
 
           <ThreeStepFlow />
