@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request) {
   try {
-    const { template, focusAreas } = await request.json();
+    const { template, focusAreas, freeText } = await request.json();
     
     // 必須フィールドの検証
     if (!template) {
@@ -20,7 +20,7 @@ export async function POST(request) {
     }
 
     // Step2専用のプロンプトを作成
-    const prompt = createStep2AnalysisPrompt(template, focusAreas);
+    const prompt = createStep2AnalysisPrompt(template, focusAreas, freeText);
     
     // Gemini API呼び出し
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`, {
@@ -73,7 +73,7 @@ export async function POST(request) {
   }
 }
 
-function createStep2AnalysisPrompt(template, focusAreas = ['currentAnalysis', 'projectDesign']) {
+function createStep2AnalysisPrompt(template, focusAreas = ['currentAnalysis', 'projectDesign'], freeText = '') {
   const companyInfo = `
 企業名: ${template.companyProfile.name || '情報不足により特定不可'}
 業界: ${template.companyProfile.industry.join(', ') || '情報不足により特定不可'}
@@ -104,6 +104,11 @@ function createStep2AnalysisPrompt(template, focusAreas = ['currentAnalysis', 'p
 稼働イメージ: ${template.projectDesign.workingHours || '情報なし'}
 `;
 
+  const freeTextSection = freeText.trim() ? `
+## 追加情報（商談議事録・ヒアリング内容）
+${freeText}
+` : '';
+
   return `
 企業の現状分析とプロジェクト設計の補完・深掘り分析を行ってください。
 
@@ -112,7 +117,7 @@ ${companyInfo}
 
 ## 事前リサーチ情報
 ${researchInfo}
-
+${freeTextSection}
 ## 現状分析（既存情報）
 ${currentInfo}
 
@@ -122,6 +127,7 @@ ${projectInfo}
 ## 分析指示
 以下の形式で、不足している情報の補完と深掘り分析を行ってください。
 既に入力されている情報は活かしつつ、不足部分を補ってください。
+${freeText.trim() ? '**特に追加情報（商談議事録等）の内容を重視して分析してください。**' : ''}
 
 ### 現状分析補完
 事業フェーズ分析：[企業の現在の成長段階と特徴を分析]

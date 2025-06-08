@@ -12,12 +12,14 @@ const TemplateEditor = ({ onTemplateUpdate }) => {
   const [template, setTemplate] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
+    freeText: true,  // 自由記述欄を最上部に追加
     company: true,
     research: true,
     analysis: true,
     project: false
   });
   const [hasChanges, setHasChanges] = useState(false);
+  const [freeTextInput, setFreeTextInput] = useState(''); // 自由記述用state
 
   // テンプレート初期化
   useEffect(() => {
@@ -107,7 +109,57 @@ const TemplateEditor = ({ onTemplateUpdate }) => {
     }
   };
 
-  // AI分析実行
+  // 自由記述テキストのAI分析
+  const handleFreeTextAnalysis = async () => {
+    if (!freeTextInput.trim() || !template) return;
+    
+    setIsAnalyzing(true);
+    
+    try {
+      const response = await fetch('/api/analyze-step2', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          template: template,
+          freeText: freeTextInput, // 自由記述テキスト
+          focusAreas: ['currentAnalysis', 'projectDesign'] // 更新対象
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Step2 free text analysis failed');
+      }
+
+      const result = await response.json();
+      console.log('Step2 free text analysis result:', result);
+      
+      // テンプレートを更新
+      const updatedTemplate = TemplateManager.updateStep2(
+        result.currentAnalysis,
+        result.projectDesign
+      );
+      
+      setTemplate(updatedTemplate);
+      setHasChanges(true);
+      
+      // 分析完了後にテキストエリアをクリア
+      setFreeTextInput('');
+      
+      if (onTemplateUpdate) {
+        onTemplateUpdate(updatedTemplate);
+      }
+      
+    } catch (error) {
+      console.error('Step2 free text analysis error:', error);
+      alert('AI分析に失敗しました。しばらく時間をおいて再試行してください。');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  // AI分析実行（既存機能）
   const handleAIAnalysis = async () => {
     if (!template) return;
     
@@ -190,6 +242,86 @@ const TemplateEditor = ({ onTemplateUpdate }) => {
           </div>
         </div>
       )}
+
+      {/* 📝 自由記述セクション */}
+      <div className="bg-white rounded-lg shadow-lg">
+        <div 
+          className="flex items-center justify-between p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50"
+          onClick={() => toggleSection('freeText')}
+        >
+          <div className="flex items-center space-x-3">
+            <FileText className="h-5 w-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-gray-900">📝 自由記述・AI自動入力</h3>
+            <span className="text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded-full">推奨</span>
+          </div>
+          {expandedSections.freeText ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+        </div>
+        
+        {expandedSections.freeText && (
+          <div className="p-6">
+            <div className="space-y-4">
+              <div className="bg-blue-50 rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <FileText className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-blue-900 mb-2">入力例</p>
+                    <div className="text-xs text-blue-700 space-y-1">
+                      <p>• 商談議事録：「現在の課題は○○で、3ヶ月以内に△△を達成したい...」</p>
+                      <p>• 追加ヒアリング：「チームは5名で、予算は月50万円程度...」</p>
+                      <p>• 社内会議メモ：「マーケティング強化が急務、外部協力者を検討...」</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  商談議事録・追加情報
+                </label>
+                <textarea
+                  value={freeTextInput}
+                  onChange={(e) => setFreeTextInput(e.target.value)}
+                  rows="8"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-y"
+                  placeholder="商談議事録、追加ヒアリング内容、社内会議メモなどを入力してください...
+
+AIが以下の項目を自動抽出・入力します：
+- 現状分析（課題、チーム構成、これまでの取り組み等）
+- プロジェクト設計（目標、スコープ、予算、タイムライン等）
+
+入力後「AI分析で自動入力」ボタンを押してください。"
+                />
+                
+                <div className="mt-4 flex items-center justify-between">
+                  <div className="text-sm text-gray-500">
+                    文字数: {freeTextInput.length}
+                  </div>
+                  
+                  {freeTextInput.trim() && (
+                    <button
+                      onClick={handleFreeTextAnalysis}
+                      disabled={isAnalyzing}
+                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                      <Sparkles className={`h-4 w-4 ${isAnalyzing ? 'animate-spin' : ''}`} />
+                      <span>{isAnalyzing ? 'AI分析中...' : 'AI分析で自動入力'}</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              <div className="bg-yellow-50 rounded-lg p-3">
+                <div className="flex items-start space-x-2">
+                  <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5" />
+                  <p className="text-sm text-yellow-800">
+                    AI分析により下記の各項目に自動入力されます。分析後、必要に応じて手動で調整してください。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* 🏢 会社情報セクション */}
       <CompanyInfoSection 
