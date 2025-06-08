@@ -23,6 +23,8 @@ const ProposalTabs = ({ template, analysisResult, onExport, onShare }) => {
 
   // 人材提案生成
   const handleGenerateTalentProposal = async () => {
+    console.log('人材提案生成開始');
+    console.log('Template data:', template);
     setIsGeneratingTalent(true);
     
     try {
@@ -41,12 +43,8 @@ const ProposalTabs = ({ template, analysisResult, onExport, onShare }) => {
       }
 
       const result = await response.json();
+      console.log('Talent proposal generated:', result);
       setTalentProposal(result.talentProposal);
-      
-      // テンプレートに保存
-      if (window.TemplateManager) {
-        window.TemplateManager.saveTalentProposal(result.talentProposal);
-      }
     } catch (error) {
       console.error('Talent proposal generation error:', error);
       alert('人材提案の生成に失敗しました。');
@@ -298,13 +296,28 @@ const ProjectDesignTab = ({ template, analysisResult }) => {
 
 // Tab 3: 人材提案
 const TalentProposalTab = ({ talentProposal, onGenerate, isGenerating }) => {
+  const handleClick = () => {
+    console.log('ボタンがクリックされました');
+    console.log('onGenerate:', typeof onGenerate);
+    console.log('isGenerating:', isGenerating);
+    if (onGenerate) {
+      onGenerate();
+    } else {
+      console.error('onGenerate function is not provided');
+    }
+  };
+
   if (!talentProposal) {
     return (
       <div className="text-center py-12">
         <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-        <p className="text-gray-600 mb-4">人材提案がまだ生成されていません</p>
+        <div className="mb-4">
+          <h4 className="text-lg font-semibold text-gray-700 mb-2">Tab3: 人材提案（手動生成）</h4>
+          <p className="text-gray-600 mb-2">人材要件定義、人材タイプ提案、稼働条件を生成します</p>
+          <p className="text-gray-500 text-sm">ボタンをクリックして人材提案を生成してください</p>
+        </div>
         <button
-          onClick={onGenerate}
+          onClick={handleClick}
           disabled={isGenerating}
           className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all mx-auto"
         >
@@ -316,7 +329,7 @@ const TalentProposalTab = ({ talentProposal, onGenerate, isGenerating }) => {
           ) : (
             <>
               <Sparkles className="h-5 w-5" />
-              <span>人材提案を生成</span>
+              <span>AI分析で生成</span>
             </>
           )}
         </button>
