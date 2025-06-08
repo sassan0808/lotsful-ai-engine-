@@ -87,18 +87,22 @@ export class TemplateManager {
   }
 
   // Step3の更新（業務選択項目）
-  static updateStep3(selectedBusinessItems: LotsfulTemplate['metadata']['selectedBusinessItems']): LotsfulTemplate {
-    const currentTemplate = this.loadTemplate();
-    
+  static updateStep3(template: LotsfulTemplate, stepData: { selectedBusinessItems: any[], workingHours: number }): LotsfulTemplate {
     const updates: PartialLotsfulTemplate = {
       metadata: {
-        ...currentTemplate.metadata,
+        ...template.metadata,
         step3Completed: true,
-        selectedBusinessItems,
+        selectedBusinessItems: stepData.selectedBusinessItems,
+      },
+      projectDesign: {
+        ...template.projectDesign,
+        workingHours: `月${stepData.workingHours}時間`,
       },
     };
 
-    return this.updateTemplate(updates);
+    const updatedTemplate = this.mergeDeep(template, updates);
+    this.saveTemplate(updatedTemplate);
+    return updatedTemplate;
   }
 
   // 分析履歴を追加

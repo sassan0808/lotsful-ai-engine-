@@ -48,6 +48,11 @@ const ThreeStepFlow = () => {
     const loadedTemplate = TemplateManager.loadTemplate();
     setTemplate(loadedTemplate);
     
+    // テンプレートから業界情報を復元
+    if (loadedTemplate?.companyProfile?.industry?.length > 0) {
+      setSelectedIndustries(loadedTemplate.companyProfile.industry);
+    }
+    
     // 既存状態に反映（業界自動連携）
     if (loadedTemplate.companyProfile.industry.length > 0) {
       setSelectedIndustries(loadedTemplate.companyProfile.industry);
@@ -178,24 +183,56 @@ const ThreeStepFlow = () => {
 
     setIsAnalyzing(true);
 
+    // 最新のテンプレートを取得
+    const currentTemplate = TemplateManager.loadTemplate();
+    
+    // 選択された業務項目をテンプレートに保存
+    const updatedTemplate = TemplateManager.updateStep3(currentTemplate, {
+      selectedBusinessItems,
+      workingHours
+    });
+    setTemplate(updatedTemplate);
+
     const analysisData = {
-      companyInfo,
-      challenges,
-      selections: {
-        workingHours,
-        selectedItems: selectedBusinessItems,
-        selectedIndustries
-      }
+      template: updatedTemplate,
+      selectedIndustries,
+      selectedItems: selectedBusinessItems,
+      workingHours
     };
 
     try {
-      console.log('Starting analysis with data:', analysisData);
-      const results = await analyzeWithGemini(analysisData);
-      console.log('Analysis results:', results);
+      console.log('Starting Step3 analysis with template data:', analysisData);
+      
+      // Step3専用のAPIを使用
+      const response = await fetch('/api/analyze-step3', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(analysisData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Analysis request failed: ${response.status}`);
+      }
+
+      const results = await response.json();
+      console.log('Step3 analysis results:', results);
       setAnalysisResults(results);
     } catch (error) {
-      console.error('Analysis failed:', error);
-      // エラー時でもモックデータを表示
+      console.error('Step3 analysis failed:', error);
+      // フォールバック処理
+      const fallbackData = {
+        companyInfo,
+        challenges,
+        selections: {
+          workingHours,
+          selectedItems: selectedBusinessItems,
+          selectedIndustries
+        }
+      };
+      const fallbackResults = await analyzeWithGemini(fallbackData);
+      setAnalysisResults(fallbackResults);
     } finally {
       setIsAnalyzing(false);
     }
