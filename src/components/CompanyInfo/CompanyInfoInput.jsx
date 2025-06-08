@@ -321,13 +321,13 @@ const CompanyInfoInput = ({ companyInfo, onCompanyInfoChange }) => {
                 業界 <span className="text-primary-600 text-xs">(Step 3に自動連携)</span>
               </label>
               <div className="flex flex-wrap gap-2">
-                {extractedInfo.industries.map((industry, index) => (
+                {(extractedInfo.industries || []).map((industry, index) => (
                   <span key={index} className="px-3 py-1 bg-primary-100 text-primary-700 text-sm rounded-full border border-primary-200">
                     <CheckCircle className="h-3 w-3 inline mr-1" />
                     {industry}
                   </span>
                 ))}
-                {extractedInfo.industries.length === 0 && (
+                {(!extractedInfo.industries || extractedInfo.industries.length === 0) && (
                   <span className="text-sm text-gray-500">業界を特定できませんでした</span>
                 )}
               </div>

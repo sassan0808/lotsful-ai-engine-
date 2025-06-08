@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 
 export async function POST(request) {
+  let requestData;
+  
   try {
-    const { researchText } = await request.json();
+    // リクエストボディを一度だけ読み込む
+    requestData = await request.json();
+    const { researchText } = requestData;
     
     // 必須フィールドの検証
     if (!researchText || researchText.trim().length === 0) {
@@ -63,12 +67,11 @@ export async function POST(request) {
     console.error('Step1 Analysis API error:', error);
     
     // エラー時はモックデータを返す
-    try {
-      const { researchText } = await request.json();
-      return NextResponse.json(generateMockStep1Analysis(researchText));
-    } catch (parseError) {
-      console.error('Failed to parse request JSON for fallback:', parseError);
-      return NextResponse.json({ error: 'Analysis failed and unable to generate fallback data' }, { status: 500 });
+    if (requestData && requestData.researchText) {
+      return NextResponse.json(generateMockStep1Analysis(requestData.researchText));
+    } else {
+      console.error('Request data not available for fallback');
+      return NextResponse.json(generateMockStep1Analysis(''));
     }
   }
 }
