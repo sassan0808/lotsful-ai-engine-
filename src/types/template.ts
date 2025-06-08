@@ -116,8 +116,70 @@ export interface ProjectCheckpoints {
   };
 }
 
+// 人材提案の型定義
+export interface WorkingPattern {
+  type: 'advisor' | 'standard' | 'execution' | 'fullcommit';
+  monthlyHours: number;
+  description: string;
+  details: string[];
+}
+
+export interface TaskAllocation {
+  category: '戦略' | '実行' | '分析' | '管理';
+  task: string;
+  hoursPerWeek: number;
+  importance: '★★★' | '★★☆' | '★☆☆';
+}
+
+export interface TalentPosition {
+  id: string;
+  title: string;
+  basicInfo: {
+    monthlyHours: number;
+    duration: number;
+    workStyle: 'リモート' | 'ハイブリッド' | '出社';
+  };
+  workingPattern: WorkingPattern;
+  mission: string;
+  tasks: TaskAllocation[];
+  requirements: {
+    mandatorySkills: string[];
+    preferredSkills: string[];
+    personalityTraits: string[];
+  };
+  profileExample: string;
+}
+
+export interface TeamPlan {
+  id: string;
+  name: string;
+  type: 'standard' | 'light' | 'advisory';
+  composition: {
+    positionId: string;
+    monthlyHours: number;
+  }[];
+  totalMonthlyHours: number;
+  features: string[];
+  notes?: string[];
+}
+
+export interface TalentProposal {
+  recommendedTeam: {
+    title: string;
+    reason: string;
+  };
+  positions: TalentPosition[];
+  teamPlans: TeamPlan[];
+  summary: {
+    totalCost: number;
+    expectedOutcome: string;
+    timeline: string;
+  };
+}
+
 export interface MatchingStrategy {
   proposedTalentPatterns: string[];
+  talentProposal?: TalentProposal;
 }
 
 export interface MeetingMemo {

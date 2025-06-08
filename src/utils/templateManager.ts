@@ -86,6 +86,57 @@ export class TemplateManager {
     return this.updateTemplate(updates);
   }
 
+  // 人材提案の生成と保存
+  static async generateTalentProposal(): Promise<LotsfulTemplate> {
+    const currentTemplate = this.loadTemplate();
+    
+    try {
+      const response = await fetch('/api/generate-talent-proposal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          template: currentTemplate
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Talent proposal generation failed');
+      }
+
+      const result = await response.json();
+      
+      // 人材提案をテンプレートに保存
+      const updatedTemplate = {
+        ...currentTemplate,
+        matchingStrategy: {
+          ...currentTemplate.matchingStrategy,
+          talentProposal: result.talentProposal
+        },
+        metadata: {
+          ...currentTemplate.metadata,
+          lastUpdated: new Date().toISOString(),
+        }
+      };
+
+      this.saveTemplate(updatedTemplate);
+      
+      // 分析履歴を追加
+      this.addAnalysisHistory(
+        4, // Step4として人材提案を扱う
+        'talentProposal',
+        { templateData: currentTemplate },
+        result
+      );
+
+      return updatedTemplate;
+    } catch (error) {
+      console.error('Talent proposal generation error:', error);
+      throw error;
+    }
+  }
+
   // Step3の更新（業務選択項目）
   static updateStep3(template: LotsfulTemplate, stepData: { selectedBusinessItems: any[], workingHours: number }): LotsfulTemplate {
     // 稼働時間を適切な型にマッピング
