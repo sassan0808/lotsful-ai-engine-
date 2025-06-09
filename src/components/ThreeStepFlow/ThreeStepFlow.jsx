@@ -438,8 +438,8 @@ const ThreeStepFlow = () => {
             )}
           </div>
         </div>
-      )}
       </div>
+      )}
 
       {/* 分析準備完了メッセージ */}
       {currentStep === 3 && canAnalyze() && !isAnalyzing && !analysisResults && (
