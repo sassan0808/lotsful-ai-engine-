@@ -208,11 +208,17 @@ const ThreeStepFlow = () => {
 
   // Step4での最終AI分析（TemplateIntegrationから直接結果を受け取る場合もある）
   const handleFinalAnalyze = async (precomputedResults = null) => {
+    console.log('=== handleFinalAnalyze CALLED ===');
+    console.log('precomputedResults:', precomputedResults);
+    
     if (precomputedResults) {
-      console.log('Received precomputed analysis results:', precomputedResults);
+      console.log('Setting precomputed analysis results to state');
       setAnalysisResults(precomputedResults);
+      console.log('Analysis results set successfully');
       return;
     }
+    
+    console.log('No precomputed results, would perform analysis here');
     setIsAnalyzing(true);
 
     // 最新のテンプレートを取得
@@ -405,11 +411,22 @@ const ThreeStepFlow = () => {
             </div>
           )}
 
-          {currentStep === 4 && (
+          {currentStep === 4 && !analysisResults && (
             <TemplateIntegration
               onTemplateUpdate={handleTemplateUpdate}
               onContinueToAnalysis={handleFinalAnalyze}
             />
+          )}
+          
+          {currentStep === 4 && analysisResults && (
+            <div className="bg-white rounded-lg shadow-sm">
+              <ProposalTabs 
+                template={template}
+                analysisResult={analysisResults}
+                onExport={() => alert('PDF出力機能は今後実装予定です')}
+                onShare={() => alert('共有機能は今後実装予定です')}
+              />
+            </div>
           )}
         </div>
 
@@ -488,17 +505,6 @@ const ThreeStepFlow = () => {
         </div>
       )}
 
-      {/* 5タブ提案書表示 - 分析結果があれば表示 */}
-      {analysisResults && (
-        <div className="mt-8">
-          <ProposalTabs 
-            template={template}
-            analysisResult={analysisResults}
-            onExport={() => alert('PDF出力機能は今後実装予定です')}
-            onShare={() => alert('共有機能は今後実装予定です')}
-          />
-        </div>
-      )}
     </div>
   );
 };

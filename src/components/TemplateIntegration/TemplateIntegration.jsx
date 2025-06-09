@@ -254,7 +254,12 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
       // でも、TemplateIntegrationはThreeStepFlowのsetAnalysisResultsにアクセスできない
       // なので、分析結果を含めてhandleFinalAnalyzeを呼び出す
       if (onContinueToAnalysis) {
+        console.log('=== PASSING RESULTS TO PARENT ===');
+        console.log('Calling onContinueToAnalysis with results:', results);
         onContinueToAnalysis(results);
+      } else {
+        console.error('❌ onContinueToAnalysis callback not provided!');
+        alert('分析結果を表示する機能が正しく設定されていません。');
       }
     } catch (error) {
       console.error('Direct analysis failed:', error);
