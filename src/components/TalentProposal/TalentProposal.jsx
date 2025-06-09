@@ -30,10 +30,6 @@ const TalentProposal = ({ proposal, onExport, onShare }) => {
     }
   };
 
-  const getImportanceStars = (importance) => {
-    return importance;
-  };
-
   return (
     <div className="space-y-6">
       {/* ヘッダー */}
@@ -124,6 +120,20 @@ const TalentProposal = ({ proposal, onExport, onShare }) => {
 
 // ポジション詳細コンポーネント
 const PositionDetail = ({ position, index }) => {
+  const getImportanceStars = (importance) => {
+    return '★'.repeat(importance) + '☆'.repeat(5 - importance);
+  };
+
+  const getWorkingPatternIcon = (type) => {
+    switch (type) {
+      case 'advisor': return '💡';
+      case 'standard': return '⚡';
+      case 'execution': return '🚀';
+      case 'fullcommit': return '🔥';
+      default: return '💼';
+    }
+  };
+
   return (
     <div className="border border-gray-200 rounded-lg p-6">
       <div className="mb-6">
@@ -322,16 +332,6 @@ const TeamPlanCard = ({ plan, positions }) => {
       )}
     </div>
   );
-};
-
-const getWorkingPatternIcon = (type) => {
-  switch (type) {
-    case 'advisor': return '💡';
-    case 'standard': return '⚡';
-    case 'execution': return '🚀';
-    case 'fullcommit': return '🔥';
-    default: return '💼';
-  }
 };
 
 export default TalentProposal;
