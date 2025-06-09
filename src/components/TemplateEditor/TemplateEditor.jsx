@@ -174,50 +174,6 @@ const TemplateEditor = ({ onTemplateUpdate }) => {
     }
   };
 
-  // AI分析実行（既存機能）
-  const handleAIAnalysis = async () => {
-    if (!template) return;
-    
-    setIsAnalyzing(true);
-    
-    try {
-      const response = await fetch('/api/analyze-step2', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          template: template,
-          focusAreas: ['currentAnalysis', 'projectDesign']
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Step2 analysis failed');
-      }
-
-      const analysisResult = await response.json();
-      
-      // AI分析結果でテンプレートを更新
-      const updatedTemplate = TemplateManager.updateStep2(
-        analysisResult.currentAnalysis,
-        analysisResult.projectDesign
-      );
-      
-      setTemplate(updatedTemplate);
-      setHasChanges(false);
-      
-      if (onTemplateUpdate) {
-        onTemplateUpdate(updatedTemplate);
-      }
-    } catch (error) {
-      console.error('Step2 AI analysis error:', error);
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-
   if (!template) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -405,23 +361,6 @@ AIが以下の項目を自動抽出・入力します：
           )}
         </div>
 
-        <button
-          onClick={handleAIAnalysis}
-          disabled={isAnalyzing}
-          className="flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-        >
-          {isAnalyzing ? (
-            <>
-              <Loader2 className="h-5 w-5 animate-spin" />
-              <span>AI分析中...</span>
-            </>
-          ) : (
-            <>
-              <Sparkles className="h-5 w-5" />
-              <span>AI分析で情報補完</span>
-            </>
-          )}
-        </button>
       </div>
     </div>
   );

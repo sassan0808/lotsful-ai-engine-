@@ -79,19 +79,19 @@ function generateMockTalentProposal(template) {
         {
           category: "戦略",
           task: isMarketingProject ? "マーケティング戦略立案" : "DX戦略策定",
-          hoursPerWeek: 8,
+          hoursPerWeek: 2.5,
           importance: 3
         },
         {
           category: "実行",
           task: isMarketingProject ? "キャンペーン企画・実行支援" : "システム要件定義支援",
-          hoursPerWeek: 10,
+          hoursPerWeek: 2.5,
           importance: 2
         },
         {
           category: "管理",
           task: "プロジェクト進行管理・レポーティング",
-          hoursPerWeek: 7,
+          hoursPerWeek: 1.25,
           importance: 2
         }
       ],
@@ -149,13 +149,13 @@ function generateMockTalentProposal(template) {
         {
           category: "実行",
           task: isMarketingProject ? "広告運用・コンテンツ制作" : "システム開発・導入",
-          hoursPerWeek: 20,
+          hoursPerWeek: 5,
           importance: 3
         },
         {
           category: "分析",
           task: isMarketingProject ? "効果測定・レポート作成" : "データ分析・改善提案",
-          hoursPerWeek: 8,
+          hoursPerWeek: 2.5,
           importance: 2
         }
       ],
