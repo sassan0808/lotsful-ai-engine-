@@ -323,9 +323,27 @@ const LotsfulPDFDocument = ({ template }) => {
 
 export const downloadPDF = async (template, filename) => {
   try {
+    console.log('Starting PDF generation...');
+    
+    // ブラウザ環境チェック
+    if (typeof window === 'undefined') {
+      throw new Error('PDF generation is only available in browser environment');
+    }
+    
+    // テンプレートデータ検証
+    if (!template) {
+      throw new Error('Template data is required');
+    }
+    
+    console.log('Creating PDF document component...');
+    
     // PDFを生成
     const doc = <LotsfulPDFDocument template={template} />;
+    
+    console.log('Generating PDF blob...');
     const blob = await pdf(doc).toBlob();
+    
+    console.log('PDF blob generated successfully, size:', blob.size);
     
     // ファイル名生成
     const companyName = template.companyProfile?.name || 'Unknown';
@@ -333,6 +351,8 @@ export const downloadPDF = async (template, filename) => {
     const now = new Date();
     const dateStr = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`;
     const finalFilename = filename || `lotsful_${cleanCompanyName}_${dateStr}.pdf`;
+    
+    console.log('Starting download with filename:', finalFilename);
     
     // ダウンロード実行
     const url = window.URL.createObjectURL(blob);
@@ -343,6 +363,8 @@ export const downloadPDF = async (template, filename) => {
     link.click();
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
+    
+    console.log('PDF download completed successfully');
     
     return { success: true, filename: finalFilename };
   } catch (error) {

@@ -159,22 +159,27 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
   };
 
   // PDF出力処理
-  const handlePDFExport = () => {
+  const handlePDFExport = async () => {
     if (!template) {
       alert('テンプレートデータが見つかりません');
       return;
     }
 
     try {
-      const result = downloadPDF(template);
-      if (result.success) {
+      console.log('PDF export started with template:', template);
+      const result = await downloadPDF(template);
+      console.log('PDF export result:', result);
+      
+      if (result && result.success) {
         alert(`PDF出力完了: ${result.filename}`);
       } else {
-        alert(`PDF出力エラー: ${result.error}`);
+        const errorMessage = result && result.error ? result.error : 'undefined';
+        console.error('PDF export failed:', errorMessage);
+        alert(`PDF出力エラー: ${errorMessage}`);
       }
     } catch (error) {
       console.error('PDF export error:', error);
-      alert('PDF出力中にエラーが発生しました');
+      alert(`PDF出力中にエラーが発生しました: ${error.message}`);
     }
   };
 
