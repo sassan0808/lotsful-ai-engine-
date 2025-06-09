@@ -152,6 +152,12 @@ const ThreeStepFlow = () => {
       title: 'データ統合確認', 
       description: 'テンプレートデータ統合・最終確認',
       required: true
+    },
+    { 
+      id: 5, 
+      title: '提案書生成', 
+      description: 'AI分析結果・5タブ提案書',
+      required: false
     }
   ];
 
@@ -229,7 +235,8 @@ const ThreeStepFlow = () => {
       console.log('✅ Received precomputed results, setting state...');
       setAnalysisResults(precomputedResults);
       setIsTemplateFinalAnalyzing(false); // 分析完了
-      console.log('✅ Analysis completed, results set');
+      setCurrentStep(5); // Step5（提案書表示）に進む
+      console.log('✅ Analysis completed, moving to Step 5');
       return;
     }
     
@@ -446,13 +453,13 @@ const ThreeStepFlow = () => {
             })()
           )}
           
-          {currentStep === 4 && analysisResults && (
+          {currentStep === 5 && analysisResults && (
             (() => {
-              console.log('=== PROPOSAL TABS RENDER CONDITION ===');
+              console.log('=== PROPOSAL TABS RENDER CONDITION (STEP 5) ===');
               console.log('currentStep:', currentStep);
               console.log('analysisResults:', analysisResults);
               console.log('!!analysisResults:', !!analysisResults);
-              console.log('Rendering ProposalTabs');
+              console.log('Rendering ProposalTabs in Step 5');
               console.log('=== END PROPOSAL TABS RENDER CONDITION ===');
               return (
                 <div className="bg-white rounded-lg shadow-sm">
@@ -471,13 +478,25 @@ const ThreeStepFlow = () => {
         {/* ナビゲーションボタン */}
         <div className="flex items-center justify-between p-8 bg-gray-50 rounded-b-lg">
           <div>
-            {currentStep > 1 && (
+            {currentStep > 1 && currentStep !== 5 && (
               <button
                 onClick={handlePrevious}
                 className="flex items-center space-x-2 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />
                 <span>前へ</span>
+              </button>
+            )}
+            {currentStep === 5 && (
+              <button
+                onClick={() => {
+                  setCurrentStep(4);
+                  setAnalysisResults(null); // 分析結果をクリアしてStep4に戻る
+                }}
+                className="flex items-center space-x-2 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                <ArrowLeft className="h-5 w-5" />
+                <span>データ確認に戻る</span>
               </button>
             )}
           </div>
@@ -503,6 +522,9 @@ const ThreeStepFlow = () => {
               )}
               {currentStep === 4 && (
                 <span>データ統合・確認画面</span>
+              )}
+              {currentStep === 5 && (
+                <span>5タブ提案書生成完了</span>
               )}
             </div>
 
