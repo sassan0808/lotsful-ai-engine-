@@ -88,7 +88,7 @@ function createFinalAnalysisPrompt(template, selectedItems, workingHours, talent
 
 ### 企業基本情報
 企業名: ${template.companyProfile?.name || '情報不足により特定不可'}
-業界: ${template.companyProfile?.industry?.join(', ') || '情報不足により特定不可'}
+業界: ${Array.isArray(template.companyProfile?.industry) && template.companyProfile.industry.length > 0 ? template.companyProfile.industry.join(', ') : '情報不足により特定不可'}
 従業員数: ${template.companyProfile?.employeeCount || '情報不足により特定不可'}
 年商: ${template.companyProfile?.revenue || '情報不足により特定不可'}
 事業内容: ${template.companyProfile?.businessDescription || '情報不足により特定不可'}
@@ -100,17 +100,17 @@ function createFinalAnalysisPrompt(template, selectedItems, workingHours, talent
 
 ### 現状分析
 事業フェーズ: ${template.currentAnalysis?.businessPhase || '情報不足'}
-課題カテゴリ: ${template.currentAnalysis?.challengeCategories?.join(', ') || '情報不足'}
+課題カテゴリ: ${Array.isArray(template.currentAnalysis?.challengeCategories) && template.currentAnalysis.challengeCategories.length > 0 ? template.currentAnalysis.challengeCategories.join(', ') : '情報不足'}
 これまでの取り組み: ${template.currentAnalysis?.previousEfforts || '情報不足'}
 失敗理由: ${template.currentAnalysis?.failureReasons || '情報不足'}
 チーム構成: ${JSON.stringify(template.currentAnalysis?.teamComposition) || '情報不足'}
-不足スキル: ${template.currentAnalysis?.missingSkills?.join(', ') || '情報不足'}
+不足スキル: ${Array.isArray(template.currentAnalysis?.missingSkills) && template.currentAnalysis.missingSkills.length > 0 ? template.currentAnalysis.missingSkills.join(', ') : '情報不足'}
 
 ### プロジェクト設計
 課題要約: ${template.projectDesign?.challengeSummary || '情報不足'}
 緊急性理由: ${template.projectDesign?.urgencyReason || '情報不足'}
 理想状態: ${template.projectDesign?.idealState3Months || '情報不足'}
-成果物: ${template.projectDesign?.deliverables?.join(', ') || '情報不足'}
+成果物: ${Array.isArray(template.projectDesign?.deliverables) && template.projectDesign.deliverables.length > 0 ? template.projectDesign.deliverables.join(', ') : '情報不足'}
 
 ## 選択された業務項目
 ${selectedItems.map(item => `• ${item.category} / ${item.phase}: ${item.item}`).join('\n')}
@@ -249,11 +249,11 @@ function generateTab1Content(template) {
   return `
 現状分析
 企業名：${template.companyProfile?.name || '情報不足により特定不可'}
-業界：${template.companyProfile?.industry?.join(', ') || '情報不足により特定不可'}
+業界：${Array.isArray(template.companyProfile?.industry) && template.companyProfile.industry.length > 0 ? template.companyProfile.industry.join(', ') : '情報不足により特定不可'}
 従業員数：${template.companyProfile?.employeeCount || '情報不足により特定不可'}
 
 課題マッピング
-表面的な課題：${template.currentAnalysis?.challengeCategories?.join(', ') || '情報不足により特定不可'}
+表面的な課題：${Array.isArray(template.currentAnalysis?.challengeCategories) && template.currentAnalysis.challengeCategories.length > 0 ? template.currentAnalysis.challengeCategories.join(', ') : '情報不足により特定不可'}
 本質的な課題：${template.currentAnalysis?.failureReasons || '詳細な分析には追加情報が必要'}
 放置した場合の影響：競争力低下、機会損失のリスク
 
@@ -281,29 +281,32 @@ Phase 2：実行・改善（2-3ヶ月）
 - 成果物：実行レポート、改善提案
 
 スコープ定義
-含むもの：${template.projectDesign?.deliverables?.join(', ') || '分析・計画・実行支援'}
+含むもの：${Array.isArray(template.projectDesign?.deliverables) && template.projectDesign.deliverables.length > 0 ? template.projectDesign.deliverables.join(', ') : '分析・計画・実行支援'}
 含まないもの：システム開発、大規模組織変更
 `.trim();
 }
 
 function generateTab3Content(template, selectedItems) {
+  const talentCount = template.metadata?.talentCount || 1;
+  const workingHours = template.metadata?.actualWorkingHours || 30;
+  
   return `
-推奨チーム構成：専門人材1名体制
+推奨チーム構成：専門人材${talentCount}名体制
 
 人材要件
 求める役割：戦略実行支援、課題解決推進
-必要スキル：${template.currentAnalysis?.missingSkills?.join(', ') || '業務分析、改善企画、プロジェクト管理'}
+必要スキル：${Array.isArray(template.currentAnalysis?.missingSkills) && template.currentAnalysis.missingSkills.length > 0 ? template.currentAnalysis.missingSkills.join(', ') : '業務分析、改善企画、プロジェクト管理'}
 経験レベル：3-5年以上の実務経験
 人物像：自走力があり、コミュニケーション能力の高い人材
 
 稼働条件
-月間稼働：30時間
+月間稼働：${workingHours}時間${talentCount > 1 ? `（1名あたり${Math.round(workingHours/talentCount)}時間）` : ''}
 勤務形態：リモート中心（月1-2回訪問）
 コミュニケーション：週1回定例会議、日常はSlack等
 
 想定工数配分
 ${selectedItems.slice(0, 3).map((item, index) => 
-  `${item.category}（${item.item}）：${Math.round(30 / Math.min(selectedItems.length, 3))}時間/月`
+  `${item.category}（${item.item || item.title}）：${Math.round(workingHours / Math.min(selectedItems.length, 3))}時間/月`
 ).join('\n')}
 `.trim();
 }

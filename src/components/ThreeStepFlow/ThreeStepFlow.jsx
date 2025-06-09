@@ -226,9 +226,9 @@ const ThreeStepFlow = () => {
     const analysisData = {
       template: currentTemplate,
       selectedIndustries,
-      selectedItems: selectedBusinessItems,
-      workingHours,
-      talentCount
+      selectedItems: currentTemplate?.metadata?.selectedBusinessItems || selectedBusinessItems,
+      workingHours: currentTemplate?.metadata?.actualWorkingHours || workingHours,
+      talentCount: currentTemplate?.metadata?.talentCount || talentCount
     };
 
     try {
