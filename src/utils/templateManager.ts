@@ -116,7 +116,7 @@ export class TemplateManager {
   }
 
   // Step3の更新（業務選択項目）
-  static updateStep3(template: LotsfulTemplate, stepData: { selectedBusinessItems: any[], workingHours: number }): LotsfulTemplate {
+  static updateStep3(template: LotsfulTemplate, stepData: { selectedBusinessItems: any[], workingHours: number, talentCount?: number }): LotsfulTemplate {
     // 稼働時間を適切な型にマッピング
     let workingHoursType: 'light_10h' | 'standard_20h' | 'commit_30h' | '' = '';
     if (stepData.workingHours <= 10) {
@@ -136,6 +136,8 @@ export class TemplateManager {
         selectedBusinessItems: stepData.selectedBusinessItems,
         // 実際の稼働時間数値もメタデータに保存
         actualWorkingHours: stepData.workingHours,
+        // 希望人数もメタデータに保存
+        talentCount: stepData.talentCount || 1,
       },
       projectDesign: {
         ...template.projectDesign,

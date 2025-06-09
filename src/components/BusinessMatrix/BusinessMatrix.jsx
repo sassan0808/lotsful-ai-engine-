@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Check, Info } from 'lucide-react';
 import { BUSINESS_CATEGORIES, DETAILED_BUSINESS_ITEMS, getBusinessItems } from '../../data/businessCategories';
 
-const BusinessMatrix = ({ selectedItems, onSelectionChange, workingHours, onWorkingHoursChange }) => {
+const BusinessMatrix = ({ selectedItems, onSelectionChange, workingHours, onWorkingHoursChange, talentCount, onTalentCountChange }) => {
   const [expandedCells, setExpandedCells] = useState(new Set());
   const [hoveredCell, setHoveredCell] = useState(null);
 
@@ -100,8 +100,9 @@ const BusinessMatrix = ({ selectedItems, onSelectionChange, workingHours, onWork
           </label>
           <input
             type="range"
-            min="20"
-            max="40"
+            min="10"
+            max="80"
+            step="5"
             value={workingHours}
             onChange={(e) => onWorkingHoursChange(parseInt(e.target.value))}
             className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
@@ -110,8 +111,34 @@ const BusinessMatrix = ({ selectedItems, onSelectionChange, workingHours, onWork
             {workingHours}時間/月
           </span>
         </div>
+        
+        {/* 人数選択 */}
+        <div className="flex items-center space-x-4 mt-4">
+          <label className="text-sm font-medium text-gray-700">
+            副業人材希望人数:
+          </label>
+          <select
+            value={talentCount || 1}
+            onChange={(e) => onTalentCountChange && onTalentCountChange(parseInt(e.target.value))}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          >
+            {[1, 2, 3, 4, 5].map(num => (
+              <option key={num} value={num}>{num}名</option>
+            ))}
+          </select>
+          <span className="text-lg font-semibold text-green-600">
+            {talentCount || 1}名
+          </span>
+        </div>
+        
         <div className="mt-2 text-sm text-gray-500">
           副業/兼業人材の一般的な稼働時間: 10-80時間/月（推奨30時間）
+          <br />
+          {talentCount > 1 && (
+            <span className="text-blue-600">
+              {talentCount}名で{workingHours}時間の場合：1名{Math.round(workingHours / talentCount)}時間ずつ または 分担調整可能
+            </span>
+          )}
         </div>
       </div>
 

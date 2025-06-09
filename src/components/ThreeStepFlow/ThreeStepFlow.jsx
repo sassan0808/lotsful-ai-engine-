@@ -43,6 +43,7 @@ const ThreeStepFlow = () => {
   const [selectedIndustries, setSelectedIndustries] = useState([]);
   const [selectedBusinessItems, setSelectedBusinessItems] = useState([]);
   const [workingHours, setWorkingHours] = useState(30);
+  const [talentCount, setTalentCount] = useState(1);
 
   // テンプレート初期化
   useEffect(() => {
@@ -190,7 +191,8 @@ const ThreeStepFlow = () => {
     // 選択された業務項目をテンプレートに保存
     const updatedTemplate = TemplateManager.updateStep3(currentTemplate, {
       selectedBusinessItems,
-      workingHours
+      workingHours,
+      talentCount
     });
     setTemplate(updatedTemplate);
 
@@ -261,6 +263,7 @@ const ThreeStepFlow = () => {
     setSelectedIndustries([]);
     setSelectedBusinessItems([]);
     setWorkingHours(30);
+    setTalentCount(1);
     
     // テンプレートもクリア
     TemplateManager.clearTemplate();
@@ -361,6 +364,8 @@ const ThreeStepFlow = () => {
                     onSelectionChange={setSelectedBusinessItems}
                     workingHours={workingHours}
                     onWorkingHoursChange={setWorkingHours}
+                    talentCount={talentCount}
+                    onTalentCountChange={setTalentCount}
                   />
                 </div>
               )}
@@ -397,7 +402,8 @@ const ThreeStepFlow = () => {
               {currentStep === 3 && (
                 <span>
                   業種: {selectedIndustries.length}個、
-                  業務: {selectedBusinessItems.length}項目
+                  業務: {selectedBusinessItems.length}項目、
+                  人数: {talentCount}名
                 </span>
               )}
             </div>

@@ -209,6 +209,7 @@ export interface TemplateMetadata {
   lastUpdated: string;
   version: string;
   actualWorkingHours?: number; // 実際の稼働時間数値
+  talentCount?: number; // 希望人数
 }
 
 // メインテンプレート構造
