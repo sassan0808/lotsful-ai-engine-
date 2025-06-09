@@ -77,17 +77,21 @@ export async function POST(request) {
 }
 
 function createFinalAnalysisPrompt(template, selectedItems, workingHours, talentCount) {
+  // デバッグ用ログ
+  console.log('Template data in createFinalAnalysisPrompt:', JSON.stringify(template, null, 2));
+  console.log('Selected items:', selectedItems);
+  
   return `
 あなたは経験豊富なビジネスコンサルタントです。蓄積されたテンプレートデータと選択された業務項目から、包括的な5タブ提案書を生成してください。
 
 ## 蓄積されたテンプレートデータ
 
 ### 企業基本情報
-企業名: ${template.companyProfile?.name || '情報不足'}
-業界: ${template.companyProfile?.industry?.join(', ') || '情報不足'}
-従業員数: ${template.companyProfile?.employeeCount || '情報不足'}
-年商: ${template.companyProfile?.revenue || '情報不足'}
-事業内容: ${template.companyProfile?.businessDescription || '情報不足'}
+企業名: ${template.companyProfile?.name || '情報不足により特定不可'}
+業界: ${template.companyProfile?.industry?.join(', ') || '情報不足により特定不可'}
+従業員数: ${template.companyProfile?.employeeCount || '情報不足により特定不可'}
+年商: ${template.companyProfile?.revenue || '情報不足により特定不可'}
+事業内容: ${template.companyProfile?.businessDescription || '情報不足により特定不可'}
 
 ### 事前リサーチ情報
 組織文化: ${template.researchData?.organizationCulture || '情報不足'}

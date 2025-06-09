@@ -212,6 +212,16 @@ const ThreeStepFlow = () => {
 
     // 最新のテンプレートを取得
     const currentTemplate = TemplateManager.loadTemplate();
+    
+    // デバッグ: テンプレートの中身を確認
+    console.log('=== TEMPLATE DEBUG START ===');
+    console.log('Loaded template from storage:', currentTemplate);
+    console.log('Company Profile:', currentTemplate?.companyProfile);
+    console.log('Research Data:', currentTemplate?.researchData);
+    console.log('Current Analysis:', currentTemplate?.currentAnalysis);
+    console.log('Project Design:', currentTemplate?.projectDesign);
+    console.log('Metadata:', currentTemplate?.metadata);
+    console.log('=== TEMPLATE DEBUG END ===');
 
     const analysisData = {
       template: currentTemplate,
