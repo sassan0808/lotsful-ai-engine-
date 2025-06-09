@@ -1,288 +1,348 @@
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import React from 'react';
+import { Document, Page, Text, View, StyleSheet, pdf } from '@react-pdf/renderer';
 
-// 日本語フォント対応のため、フォントファイルを埋め込み用に準備
-// 実際の運用では、フォントファイルを追加する必要がある
-// 今回は基本的なASCII文字とひらがな・カタカナ・漢字の代替表示で対応
+// 日本語対応のスタイル定義
+const styles = StyleSheet.create({
+  page: {
+    flexDirection: 'column',
+    backgroundColor: '#FFFFFF',
+    padding: 30,
+    fontFamily: 'Helvetica',
+  },
+  header: {
+    fontSize: 18,
+    marginBottom: 10,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  subHeader: {
+    fontSize: 10,
+    marginBottom: 20,
+    textAlign: 'center',
+    color: '#666666',
+  },
+  section: {
+    marginBottom: 15,
+    padding: 10,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 4,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#2563EB',
+  },
+  fieldContainer: {
+    marginBottom: 6,
+  },
+  fieldLabel: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#374151',
+    marginBottom: 2,
+  },
+  fieldValue: {
+    fontSize: 9,
+    color: '#111827',
+    lineHeight: 1.4,
+  },
+  listItem: {
+    fontSize: 9,
+    marginBottom: 2,
+    paddingLeft: 10,
+  },
+  separator: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    marginVertical: 15,
+  },
+  scoreSection: {
+    backgroundColor: '#EFF6FF',
+    padding: 10,
+    borderRadius: 4,
+    marginBottom: 15,
+  },
+  scoreTitle: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#1E40AF',
+    marginBottom: 5,
+  },
+  guideSection: {
+    backgroundColor: '#F0FDF4',
+    padding: 10,
+    borderRadius: 4,
+  },
+  guideTitle: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#059669',
+    marginBottom: 5,
+  },
+  guideText: {
+    fontSize: 9,
+    color: '#064E3B',
+    lineHeight: 1.3,
+  }
+});
 
-export const generatePrimaryDataPDF = (template) => {
-  const doc = new jsPDF('p', 'mm', 'a4');
-  
-  // フォント設定（日本語対応）
-  doc.setFont('helvetica');
-  
-  let yPosition = 20;
-  const pageHeight = doc.internal.pageSize.height;
-  const margin = 20;
-  const lineHeight = 7;
-  
-  // ヘッダー
-  doc.setFontSize(20);
-  doc.text('Lotsful 1次情報統合レポート', margin, yPosition);
-  yPosition += 15;
-  
-  doc.setFontSize(10);
+// PDFドキュメントコンポーネント
+const LotsfulPDFDocument = ({ template }) => {
   const now = new Date();
-  const dateStr = `生成日時: ${now.getFullYear()}年${(now.getMonth() + 1).toString().padStart(2, '0')}月${now.getDate().toString().padStart(2, '0')}日 ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-  doc.text(dateStr, margin, yPosition);
-  yPosition += 15;
-  
-  // 区切り線
-  doc.line(margin, yPosition, 190, yPosition);
-  yPosition += 10;
-  
-  // セクション追加のヘルパー関数
-  const addSection = (title, emoji) => {
-    if (yPosition > pageHeight - 40) {
-      doc.addPage();
-      yPosition = 20;
-    }
-    
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${emoji} ${title}`, margin, yPosition);
-    yPosition += 10;
-    
-    doc.line(margin, yPosition, 190, yPosition);
-    yPosition += 8;
-    
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-  };
-  
-  // テキストフィールド追加のヘルパー関数
-  const addField = (label, value, multiline = false) => {
-    if (yPosition > pageHeight - 20) {
-      doc.addPage();
-      yPosition = 20;
-    }
-    
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${label}: `, margin, yPosition);
-    
-    doc.setFont('helvetica', 'normal');
-    const displayValue = value && value !== '情報不足により特定不可' ? value : '情報不足により特定不可';
-    
-    if (multiline && displayValue.length > 60) {
-      const lines = doc.splitTextToSize(displayValue, 160);
-      doc.text(lines, margin + 5, yPosition + lineHeight);
-      yPosition += lines.length * lineHeight + 3;
-    } else {
-      const shortValue = displayValue.length > 80 ? displayValue.substring(0, 80) + '...' : displayValue;
-      doc.text(shortValue, margin + 40, yPosition);
-      yPosition += lineHeight;
-    }
-  };
-  
-  // 配列フィールド追加のヘルパー関数
-  const addArrayField = (label, array) => {
-    if (yPosition > pageHeight - 20) {
-      doc.addPage();
-      yPosition = 20;
-    }
-    
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${label}: `, margin, yPosition);
-    yPosition += lineHeight;
-    
-    doc.setFont('helvetica', 'normal');
-    if (array && array.length > 0) {
-      array.forEach((item, index) => {
-        if (yPosition > pageHeight - 15) {
-          doc.addPage();
-          yPosition = 20;
-        }
-        doc.text(`  • ${item}`, margin + 5, yPosition);
-        yPosition += lineHeight;
-      });
-    } else {
-      doc.text('  情報不足により特定不可', margin + 5, yPosition);
-      yPosition += lineHeight;
-    }
-    yPosition += 3;
-  };
-  
-  // 1. 企業基本情報
-  addSection('企業基本情報', '🏢');
-  
-  if (template.companyProfile) {
-    addField('企業名', template.companyProfile.name);
-    addArrayField('業界', template.companyProfile.industry);
-    addField('従業員数', template.companyProfile.employeeCount);
-    addField('年商', template.companyProfile.revenue);
-    addField('本社所在地', template.companyProfile.headquarters);
-    addField('事業内容', template.companyProfile.businessDescription, true);
-    addField('主要顧客層', template.companyProfile.mainCustomers, true);
-  }
-  
-  yPosition += 5;
-  
-  // 2. 事前リサーチ情報
-  addSection('事前リサーチ情報', '🔍');
-  
-  if (template.researchData) {
-    addField('ディープリサーチ', template.researchData.deepResearchMemo, true);
-    addField('最近の動き', template.researchData.recentNews, true);
-    addField('組織特徴', template.researchData.organizationCulture, true);
-    addField('仮説・洞察', template.researchData.hypothesisInsights, true);
-    
-    if (template.researchData.meetingCheckpoints && template.researchData.meetingCheckpoints.length > 0) {
-      addArrayField('ミーティングチェックポイント', template.researchData.meetingCheckpoints);
-    }
-  }
-  
-  yPosition += 5;
-  
-  // 3. 現状分析
-  addSection('現状分析', '📊');
-  
-  if (template.currentAnalysis) {
-    addField('事業フェーズ', template.currentAnalysis.businessPhase);
-    addArrayField('課題カテゴリ', template.currentAnalysis.challengeCategories);
-    addField('これまでの取り組み', template.currentAnalysis.previousEfforts, true);
-    addField('失敗理由', template.currentAnalysis.failureReasons, true);
-    addArrayField('不足スキル', template.currentAnalysis.missingSkills);
-    addField('外部人材経験', template.currentAnalysis.externalTalentExperience);
-    addField('意思決定プロセス', template.currentAnalysis.decisionProcess);
-    
-    if (template.currentAnalysis.teamComposition && template.currentAnalysis.teamComposition.length > 0) {
-      doc.setFont('helvetica', 'bold');
-      doc.text('チーム構成: ', margin, yPosition);
-      yPosition += lineHeight;
-      
-      doc.setFont('helvetica', 'normal');
-      template.currentAnalysis.teamComposition.forEach(team => {
-        if (yPosition > pageHeight - 15) {
-          doc.addPage();
-          yPosition = 20;
-        }
-        doc.text(`  • ${team.department}: ${team.headcount}名 (${team.mainRole})`, margin + 5, yPosition);
-        yPosition += lineHeight;
-      });
-      yPosition += 3;
-    }
-  }
-  
-  yPosition += 5;
-  
-  // 4. プロジェクト設計
-  addSection('プロジェクト設計', '🎯');
-  
-  if (template.projectDesign) {
-    addField('解決したい課題', template.projectDesign.challengeSummary, true);
-    addField('緊急性の理由', template.projectDesign.urgencyReason, true);
-    addField('3ヶ月後の理想状態', template.projectDesign.idealState3Months, true);
-    addField('稼働時間', template.projectDesign.workingHours);
-    
-    if (template.projectDesign.deliverables) {
-      addArrayField('期待成果物', template.projectDesign.deliverables);
-    }
-    
-    if (template.projectDesign.budget) {
-      const budget = template.projectDesign.budget;
-      addField('予算', `月${budget.monthlyBudget || 0}万円 × ${budget.duration || 0}ヶ月 = 総額${budget.totalBudget || 0}万円`);
-    }
-    
-    if (template.projectDesign.scope) {
-      addArrayField('スコープ(含む)', template.projectDesign.scope.included);
-      addArrayField('スコープ(含まない)', template.projectDesign.scope.excluded);
-    }
-  }
-  
-  yPosition += 5;
-  
-  // 5. 選択業務項目
-  addSection('選択業務項目', '🔧');
-  
-  if (template.metadata && template.metadata.selectedBusinessItems && template.metadata.selectedBusinessItems.length > 0) {
-    doc.text(`選択項目数: ${template.metadata.selectedBusinessItems.length}項目`, margin, yPosition);
-    yPosition += lineHeight + 3;
-    
-    template.metadata.selectedBusinessItems.forEach((item, index) => {
-      if (yPosition > pageHeight - 15) {
-        doc.addPage();
-        yPosition = 20;
-      }
-      doc.text(`• ${item.category} / ${item.phase}: ${item.item || item.title}`, margin + 5, yPosition);
-      yPosition += lineHeight;
-    });
-  } else {
-    doc.text('業務項目が選択されていません', margin, yPosition);
-    yPosition += lineHeight;
-  }
-  
-  yPosition += 10;
-  
-  // 6. データ品質・生成情報
-  addSection('データ品質・生成情報', '📈');
-  
-  // 分析精度スコア計算（簡易版）
-  const calculateSimpleScore = () => {
+  const dateStr = `${now.getFullYear()}年${(now.getMonth() + 1).toString().padStart(2, '0')}月${now.getDate().toString().padStart(2, '0')}日 ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+  // 分析精度スコア計算
+  const calculateScore = () => {
     let score = 0;
-    if (template.companyProfile?.name) score += 15;
+    if (template.companyProfile?.name && template.companyProfile.name !== '情報不足により特定不可') score += 15;
     if (template.currentAnalysis?.challengeCategories?.length > 0) score += 15;
     if (template.metadata?.selectedBusinessItems?.length > 0) score += 20;
-    if (template.researchData?.deepResearchMemo) score += 12;
+    if (template.researchData?.deepResearchMemo && template.researchData.deepResearchMemo !== '情報不足により特定不可') score += 12;
     if (template.metadata?.actualWorkingHours) score += 12;
     if (template.metadata?.talentCount) score += 10;
     return Math.round((score / 177) * 100);
   };
-  
-  const analysisScore = calculateSimpleScore();
-  addField('分析精度スコア', `${analysisScore}/100`);
-  
-  const completedSteps = [
-    template.metadata?.step1Completed ? 'Step1 ✓' : 'Step1 ×',
-    template.metadata?.step2Completed ? 'Step2 ✓' : 'Step2 ×', 
-    template.metadata?.step3Completed ? 'Step3 ✓' : 'Step3 ×'
-  ];
-  addField('完了ステップ', completedSteps.join(' / '));
-  addField('生成システム', 'Lotsful AI Engine v1.0');
-  addField('データソース', 'Step1-4累積テンプレートデータ');
-  addField('最終更新', template.metadata?.lastUpdated || new Date().toISOString());
-  
-  yPosition += 10;
-  
-  // 7. 活用ガイド
-  addSection('活用ガイド', '📋');
-  
-  doc.text('※このPDFは「1次情報」です。', margin, yPosition);
-  yPosition += lineHeight;
-  doc.text('　以下の用途でご活用ください：', margin, yPosition);
-  yPosition += lineHeight + 3;
-  
-  const usageGuide = [
-    '1. 外部AIツール分析: Claude、ChatGPT等に入力',
-    '2. 社内共有: 関係者への情報共有資料',
-    '3. 提案書作成: 他システムでの2次加工素材',
-    '4. バックアップ: システム非依存の情報保存',
-    '5. 顧客説明: 分析プロセスの透明性確保'
-  ];
-  
-  usageGuide.forEach(guide => {
-    if (yPosition > pageHeight - 15) {
-      doc.addPage();
-      yPosition = 20;
-    }
-    doc.text(guide, margin + 5, yPosition);
-    yPosition += lineHeight;
-  });
-  
-  return doc;
+
+  const analysisScore = calculateScore();
+
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        {/* ヘッダー */}
+        <Text style={styles.header}>Lotsful 1次情報統合レポート</Text>
+        <Text style={styles.subHeader}>生成日時: {dateStr}</Text>
+        
+        <View style={styles.separator} />
+
+        {/* 企業基本情報 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>🏢 企業基本情報</Text>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>企業名</Text>
+            <Text style={styles.fieldValue}>{template.companyProfile?.name || '情報不足により特定不可'}</Text>
+          </View>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>業界</Text>
+            <Text style={styles.fieldValue}>
+              {template.companyProfile?.industry?.length > 0 ? template.companyProfile.industry.join(', ') : '情報不足により特定不可'}
+            </Text>
+          </View>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>従業員数</Text>
+            <Text style={styles.fieldValue}>{template.companyProfile?.employeeCount || '情報不足により特定不可'}</Text>
+          </View>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>年商</Text>
+            <Text style={styles.fieldValue}>{template.companyProfile?.revenue || '情報不足により特定不可'}</Text>
+          </View>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>本社所在地</Text>
+            <Text style={styles.fieldValue}>{template.companyProfile?.headquarters || '情報不足により特定不可'}</Text>
+          </View>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>事業内容</Text>
+            <Text style={styles.fieldValue}>{template.companyProfile?.businessDescription || '情報不足により特定不可'}</Text>
+          </View>
+        </View>
+
+        {/* 事前リサーチ情報 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>🔍 事前リサーチ情報</Text>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>ディープリサーチメモ</Text>
+            <Text style={styles.fieldValue}>{template.researchData?.deepResearchMemo || '情報不足により特定不可'}</Text>
+          </View>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>最近の動き・ニュース</Text>
+            <Text style={styles.fieldValue}>{template.researchData?.recentNews || '情報不足により特定不可'}</Text>
+          </View>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>組織文化・特徴</Text>
+            <Text style={styles.fieldValue}>{template.researchData?.organizationCulture || '情報不足により特定不可'}</Text>
+          </View>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>仮説・洞察</Text>
+            <Text style={styles.fieldValue}>{template.researchData?.hypothesisInsights || '情報不足により特定不可'}</Text>
+          </View>
+        </View>
+
+        {/* 現状分析 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>📊 現状分析</Text>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>事業フェーズ</Text>
+            <Text style={styles.fieldValue}>{template.currentAnalysis?.businessPhase || '情報不足により特定不可'}</Text>
+          </View>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>課題カテゴリ</Text>
+            <Text style={styles.fieldValue}>
+              {template.currentAnalysis?.challengeCategories?.length > 0 ? 
+                template.currentAnalysis.challengeCategories.join(', ') : 
+                '情報不足により特定不可'}
+            </Text>
+          </View>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>これまでの取り組み</Text>
+            <Text style={styles.fieldValue}>{template.currentAnalysis?.previousEfforts || '情報不足により特定不可'}</Text>
+          </View>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>失敗理由</Text>
+            <Text style={styles.fieldValue}>{template.currentAnalysis?.failureReasons || '情報不足により特定不可'}</Text>
+          </View>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>不足スキル</Text>
+            <Text style={styles.fieldValue}>
+              {template.currentAnalysis?.missingSkills?.length > 0 ? 
+                template.currentAnalysis.missingSkills.join(', ') : 
+                '情報不足により特定不可'}
+            </Text>
+          </View>
+        </View>
+
+        {/* プロジェクト設計 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>🎯 プロジェクト設計</Text>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>課題要約</Text>
+            <Text style={styles.fieldValue}>{template.projectDesign?.challengeSummary || '情報不足により特定不可'}</Text>
+          </View>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>緊急性の理由</Text>
+            <Text style={styles.fieldValue}>{template.projectDesign?.urgencyReason || '情報不足により特定不可'}</Text>
+          </View>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>3ヶ月後の理想状態</Text>
+            <Text style={styles.fieldValue}>{template.projectDesign?.idealState3Months || '情報不足により特定不可'}</Text>
+          </View>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>稼働時間</Text>
+            <Text style={styles.fieldValue}>
+              {template.metadata?.actualWorkingHours ? 
+                `${template.metadata.actualWorkingHours}時間/月` : 
+                '情報不足により特定不可'}
+            </Text>
+          </View>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>希望人数</Text>
+            <Text style={styles.fieldValue}>
+              {template.metadata?.talentCount ? 
+                `${template.metadata.talentCount}名` : 
+                '情報不足により特定不可'}
+            </Text>
+          </View>
+        </View>
+
+        {/* 選択業務項目 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>🔧 選択業務項目</Text>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>選択項目数</Text>
+            <Text style={styles.fieldValue}>
+              {template.metadata?.selectedBusinessItems?.length || 0}項目
+            </Text>
+          </View>
+          
+          {template.metadata?.selectedBusinessItems?.map((item, index) => (
+            <Text key={index} style={styles.listItem}>
+              • {item.category} / {item.phase}: {item.item || item.title}
+            </Text>
+          ))}
+          
+          {(!template.metadata?.selectedBusinessItems || template.metadata.selectedBusinessItems.length === 0) && (
+            <Text style={styles.fieldValue}>業務項目が選択されていません</Text>
+          )}
+        </View>
+
+        {/* データ品質・生成情報 */}
+        <View style={styles.scoreSection}>
+          <Text style={styles.scoreTitle}>📈 データ品質・生成情報</Text>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>分析精度スコア</Text>
+            <Text style={styles.fieldValue}>{analysisScore}/100</Text>
+          </View>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>完了ステップ</Text>
+            <Text style={styles.fieldValue}>
+              {template.metadata?.step1Completed ? 'Step1 ✓' : 'Step1 ×'} / 
+              {template.metadata?.step2Completed ? 'Step2 ✓' : 'Step2 ×'} / 
+              {template.metadata?.step3Completed ? 'Step3 ✓' : 'Step3 ×'}
+            </Text>
+          </View>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>生成システム</Text>
+            <Text style={styles.fieldValue}>Lotsful AI Engine v1.0</Text>
+          </View>
+          
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>最終更新</Text>
+            <Text style={styles.fieldValue}>{template.metadata?.lastUpdated || new Date().toISOString()}</Text>
+          </View>
+        </View>
+
+        {/* 活用ガイド */}
+        <View style={styles.guideSection}>
+          <Text style={styles.guideTitle}>📋 活用ガイド</Text>
+          <Text style={styles.guideText}>
+            ※このPDFは「1次情報」です。以下の用途でご活用ください：{'\n'}
+            1. 外部AIツール分析: Claude、ChatGPT等に入力{'\n'}
+            2. 社内共有: 関係者への情報共有資料{'\n'}
+            3. 提案書作成: 他システムでの2次加工素材{'\n'}
+            4. バックアップ: システム非依存の情報保存{'\n'}
+            5. 顧客説明: 分析プロセスの透明性確保
+          </Text>
+        </View>
+      </Page>
+    </Document>
+  );
 };
 
-export const downloadPDF = (template, filename) => {
+export const downloadPDF = async (template, filename) => {
   try {
-    const doc = generatePrimaryDataPDF(template);
+    // PDFを生成
+    const doc = <LotsfulPDFDocument template={template} />;
+    const blob = await pdf(doc).toBlob();
     
     // ファイル名生成
     const companyName = template.companyProfile?.name || 'Unknown';
+    const cleanCompanyName = companyName.replace(/[^a-zA-Z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/g, '_');
     const now = new Date();
     const dateStr = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`;
-    const finalFilename = filename || `lotsful_${companyName}_${dateStr}.pdf`;
+    const finalFilename = filename || `lotsful_${cleanCompanyName}_${dateStr}.pdf`;
     
     // ダウンロード実行
-    doc.save(finalFilename);
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = finalFilename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
     
     return { success: true, filename: finalFilename };
   } catch (error) {
