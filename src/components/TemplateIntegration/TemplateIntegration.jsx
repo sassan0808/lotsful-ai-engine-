@@ -179,11 +179,51 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
       console.log('=== DIRECT ANALYSIS DEBUG ===');
       console.log('Using same template as PDF:', template);
       console.log('Company Profile:', template?.companyProfile);
+      console.log('Company Name specifically:', template?.companyProfile?.name);
+      console.log('Company Name type:', typeof template?.companyProfile?.name);
+      console.log('Company Name value check (empty string):', template?.companyProfile?.name === '');
+      console.log('Company Name value check (undefined):', template?.companyProfile?.name === undefined);
+      console.log('Company Name value check (null):', template?.companyProfile?.name === null);
       console.log('Research Data:', template?.researchData);
       console.log('Current Analysis:', template?.currentAnalysis);
       console.log('Project Design:', template?.projectDesign);
       console.log('Metadata:', template?.metadata);
+      console.log('Step1 completed:', template?.metadata?.step1Completed);
+      console.log('Step2 completed:', template?.metadata?.step2Completed);
+      console.log('Step3 completed:', template?.metadata?.step3Completed);
       console.log('=== DIRECT ANALYSIS DEBUG END ===');
+
+      // データ有効性チェック
+      const hasCompanyName = template?.companyProfile?.name && template.companyProfile.name !== '';
+      const hasIndustry = template?.companyProfile?.industry && template.companyProfile.industry.length > 0;
+      const hasBusinessItems = template?.metadata?.selectedBusinessItems && template.metadata.selectedBusinessItems.length > 0;
+      
+      console.log('=== DATA VALIDATION ===');
+      console.log('Has company name:', hasCompanyName);
+      console.log('Has industry:', hasIndustry);
+      console.log('Has business items:', hasBusinessItems);
+      console.log('Step1 completed?:', template?.metadata?.step1Completed);
+      console.log('Step2 completed?:', template?.metadata?.step2Completed);
+      console.log('Step3 completed?:', template?.metadata?.step3Completed);
+      
+      if (!hasCompanyName) {
+        console.warn('⚠️ Company name is missing or empty. This will result in "未設定" in the analysis.');
+      }
+      
+      if (!hasIndustry) {
+        console.warn('⚠️ Industry is missing or empty. This will result in "未設定" in the analysis.');
+      }
+      
+      if (!hasBusinessItems) {
+        console.warn('⚠️ Business items are missing. This may affect analysis quality.');
+      }
+      
+      if (!template?.metadata?.step1Completed) {
+        console.warn('⚠️ Step1 was not completed. Basic company information may be missing.');
+        alert('⚠️ Step1の企業情報分析が完了していません。Step1で「AI分析実行」ボタンを押してからお試しください。');
+        return;
+      }
+      console.log('=== DATA VALIDATION END ===');
 
       const analysisData = {
         template: template,

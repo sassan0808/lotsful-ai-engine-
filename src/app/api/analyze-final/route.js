@@ -79,10 +79,16 @@ export async function POST(request) {
 function createFinalAnalysisPrompt(template, selectedItems, workingHours, talentCount) {
   // 徹底的デバッグ
   console.log('=== ANALYZE-FINAL API DEBUG START ===');
-  console.log('Received template:', template);
+  console.log('Received template:', JSON.stringify(template, null, 2));
   console.log('Template type:', typeof template);
   console.log('Template companyProfile:', template?.companyProfile);
   console.log('Company name specifically:', template?.companyProfile?.name);
+  console.log('Company name type:', typeof template?.companyProfile?.name);
+  console.log('Company name length:', template?.companyProfile?.name?.length);
+  console.log('Company industry:', template?.companyProfile?.industry);
+  console.log('Research data:', template?.researchData);
+  console.log('Current analysis:', template?.currentAnalysis);
+  console.log('Project design:', template?.projectDesign);
   console.log('Selected items:', selectedItems);
   console.log('Working hours:', workingHours);
   console.log('Talent count:', talentCount);
@@ -253,6 +259,14 @@ function extractSection(text, startMarker, endMarker) {
 }
 
 function generateTab1Content(template) {
+  // デバッグ: generateTab1Contentで受け取ったtemplate
+  console.log('=== GENERATE TAB1 DEBUG ===');
+  console.log('Template received in generateTab1Content:', JSON.stringify(template, null, 2));
+  console.log('template.companyProfile:', template?.companyProfile);
+  console.log('template.companyProfile.name:', template?.companyProfile?.name);
+  console.log('template.companyProfile.name type:', typeof template?.companyProfile?.name);
+  console.log('=== GENERATE TAB1 DEBUG END ===');
+  
   return `
 現状分析
 企業名：${template.companyProfile?.name || '情報不足により特定不可'}
