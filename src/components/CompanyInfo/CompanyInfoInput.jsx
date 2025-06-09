@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Building2, FileText, Sparkles, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { Building2, FileText, Sparkles, AlertCircle, CheckCircle, Loader2, Eye } from 'lucide-react';
 
 const CompanyInfoInput = ({ companyInfo, onCompanyInfoChange }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -283,82 +283,80 @@ const CompanyInfoInput = ({ companyInfo, onCompanyInfoChange }) => {
             <h3 className="text-lg font-semibold text-gray-900">AI抽出結果</h3>
           </div>
           
-          <div className="space-y-4">
-            {/* 基本情報 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">企業名</label>
-                <p className="text-sm text-gray-900">{extractedInfo.companyName}</p>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700">企業規模</label>
-                <p className="text-sm text-gray-900">{extractedInfo.companySize}</p>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700">成長ステージ</label>
-                <p className="text-sm text-gray-900">{extractedInfo.growthStage}</p>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700">分析信頼度</label>
-                <div className="flex items-center space-x-2">
-                  <div className="flex-1 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-primary-600 h-2 rounded-full" 
-                      style={{width: `${extractedInfo.confidence}%`}}
-                    ></div>
-                  </div>
-                  <span className="text-sm text-gray-600">{extractedInfo.confidence}%</span>
+          <div className="space-y-6">
+            {/* 🏢 企業基本情報 */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-semibold text-blue-900 mb-3 flex items-center">
+                <Building2 className="h-4 w-4 mr-2" />
+                企業基本情報
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-blue-700">企業名</label>
+                  <p className="text-sm text-blue-900">{extractedInfo.companyName}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-blue-700">従業員数</label>
+                  <p className="text-sm text-blue-900">{extractedInfo.employeeCount || '情報不足により特定不可'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-blue-700">年商</label>
+                  <p className="text-sm text-blue-900">{extractedInfo.revenue || '情報不足により特定不可'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-blue-700">本社所在地</label>
+                  <p className="text-sm text-blue-900">{extractedInfo.headquarters || '情報不足により特定不可'}</p>
                 </div>
               </div>
-            </div>
-
-            {/* 業界（自動連携対象） */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                業界 <span className="text-primary-600 text-xs">(Step 3に自動連携)</span>
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {(extractedInfo.industries || []).map((industry, index) => (
-                  <span key={index} className="px-3 py-1 bg-primary-100 text-primary-700 text-sm rounded-full border border-primary-200">
-                    <CheckCircle className="h-3 w-3 inline mr-1" />
-                    {industry}
-                  </span>
-                ))}
-                {(!extractedInfo.industries || extractedInfo.industries.length === 0) && (
-                  <span className="text-sm text-gray-500">業界を特定できませんでした</span>
-                )}
+              
+              {/* 業界（自動連携対象） */}
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-blue-700 mb-2">
+                  業界 <span className="text-primary-600 text-xs">(Step3に自動連携)</span>
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {(extractedInfo.industries || []).map((industry, index) => (
+                    <span key={index} className="px-3 py-1 bg-primary-100 text-primary-700 text-sm rounded-full border border-primary-200">
+                      <CheckCircle className="h-3 w-3 inline mr-1" />
+                      {industry}
+                    </span>
+                  ))}
+                  {(!extractedInfo.industries || extractedInfo.industries.length === 0) && (
+                    <span className="text-sm text-gray-500">業界を特定できませんでした</span>
+                  )}
+                </div>
+              </div>
+              
+              {/* 事業内容 */}
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-blue-700">事業内容</label>
+                <p className="text-sm text-blue-900 bg-white p-3 rounded border border-blue-200">{extractedInfo.businessDescription}</p>
               </div>
             </div>
 
-            {/* 事業内容 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">事業内容</label>
-              <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-lg">{extractedInfo.businessDescription}</p>
-            </div>
+            {/* 🔍 事前リサーチ情報 */}
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <h4 className="font-semibold text-green-900 mb-3 flex items-center">
+                <Eye className="h-4 w-4 mr-2" />
+                事前リサーチ情報
+              </h4>
+              
+              {/* 組織特徴 */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-green-700">組織文化・特徴</label>
+                <p className="text-sm text-green-900 bg-white p-3 rounded border border-green-200">{extractedInfo.organizationFeatures}</p>
+              </div>
 
-            {/* 組織特徴 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">組織特徴</label>
-              <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-lg">{extractedInfo.organizationFeatures}</p>
-            </div>
+              {/* 最近の動き */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-green-700">最近の動き・ニュース</label>
+                <p className="text-sm text-green-900 bg-white p-3 rounded border border-green-200">{extractedInfo.recentNews || '情報不足により特定不可'}</p>
+              </div>
 
-            {/* 主要課題 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">推定される主要課題</label>
-              <div className="space-y-1">
-                {extractedInfo.mainChallenges && extractedInfo.mainChallenges.length > 0 ? (
-                  extractedInfo.mainChallenges.map((challenge, index) => (
-                    <div key={index} className="flex items-center space-x-2 text-sm text-gray-700">
-                      <AlertCircle className="h-3 w-3 text-orange-500" />
-                      <span>{challenge}</span>
-                    </div>
-                  ))
-                ) : (
-                  <span className="text-sm text-gray-500">課題を特定できませんでした</span>
-                )}
+              {/* 仮説・洞察 */}
+              <div>
+                <label className="block text-sm font-medium text-green-700">仮説・洞察</label>
+                <p className="text-sm text-green-900 bg-white p-3 rounded border border-green-200">{extractedInfo.insights || '情報不足により特定不可'}</p>
               </div>
             </div>
           </div>
