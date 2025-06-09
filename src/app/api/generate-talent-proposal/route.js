@@ -80,19 +80,19 @@ function generateMockTalentProposal(template) {
           category: "戦略",
           task: isMarketingProject ? "マーケティング戦略立案" : "DX戦略策定",
           hoursPerWeek: 8,
-          importance: "★★★"
+          importance: 3
         },
         {
           category: "実行",
           task: isMarketingProject ? "キャンペーン企画・実行支援" : "システム要件定義支援",
           hoursPerWeek: 10,
-          importance: "★★☆"
+          importance: 2
         },
         {
           category: "管理",
           task: "プロジェクト進行管理・レポーティング",
           hoursPerWeek: 7,
-          importance: "★★☆"
+          importance: 2
         }
       ],
       requirements: {
@@ -150,13 +150,13 @@ function generateMockTalentProposal(template) {
           category: "実行",
           task: isMarketingProject ? "広告運用・コンテンツ制作" : "システム開発・導入",
           hoursPerWeek: 20,
-          importance: "★★★"
+          importance: 3
         },
         {
           category: "分析",
           task: isMarketingProject ? "効果測定・レポート作成" : "データ分析・改善提案",
           hoursPerWeek: 8,
-          importance: "★★☆"
+          importance: 2
         }
       ],
       requirements: {
@@ -165,6 +165,10 @@ function generateMockTalentProposal(template) {
             ? "デジタル広告運用経験2年以上"
             : "Webアプリケーション開発経験3年以上",
           "データ分析スキル"
+        ],
+        preferredSkills: [
+          isMarketingProject ? "MAツール操作経験" : "DevOps/CI/CD経験",
+          "プレゼンテーションスキル"
         ],
         personalityTraits: [
           "実行力とスピード感を重視",
