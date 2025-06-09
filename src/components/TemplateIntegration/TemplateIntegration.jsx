@@ -200,7 +200,9 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
       const results = await response.json();
       console.log('Direct analysis results:', results);
       
-      // 結果を親に通知
+      // 結果をThreeStepFlowのstateに設定する必要がある
+      // でも、TemplateIntegrationはThreeStepFlowのsetAnalysisResultsにアクセスできない
+      // なので、分析結果を含めてhandleFinalAnalyzeを呼び出す
       if (onContinueToAnalysis) {
         onContinueToAnalysis(results);
       }

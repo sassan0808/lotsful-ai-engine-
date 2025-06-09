@@ -206,8 +206,13 @@ const ThreeStepFlow = () => {
     setCurrentStep(4);
   };
 
-  // Step4での最終AI分析
-  const handleFinalAnalyze = async () => {
+  // Step4での最終AI分析（TemplateIntegrationから直接結果を受け取る場合もある）
+  const handleFinalAnalyze = async (precomputedResults = null) => {
+    if (precomputedResults) {
+      console.log('Received precomputed analysis results:', precomputedResults);
+      setAnalysisResults(precomputedResults);
+      return;
+    }
     setIsAnalyzing(true);
 
     // 最新のテンプレートを取得
