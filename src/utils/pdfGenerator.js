@@ -1,5 +1,20 @@
 import React from 'react';
-import { Document, Page, Text, View, StyleSheet, pdf } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, pdf, Font } from '@react-pdf/renderer';
+
+// 日本語フォントの登録
+Font.register({
+  family: 'NotoSansJP',
+  fonts: [
+    {
+      src: 'https://fonts.gstatic.com/ea/notosansjapanese/v6/NotoSansJP-Regular.otf',
+      fontWeight: 400,
+    },
+    {
+      src: 'https://fonts.gstatic.com/ea/notosansjapanese/v6/NotoSansJP-Bold.otf', 
+      fontWeight: 700,
+    },
+  ],
+});
 
 // 日本語対応のスタイル定義
 const styles = StyleSheet.create({
@@ -7,19 +22,21 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     backgroundColor: '#FFFFFF',
     padding: 30,
-    fontFamily: 'Helvetica',
+    fontFamily: 'NotoSansJP',
   },
   header: {
     fontSize: 18,
     marginBottom: 10,
     fontWeight: 'bold',
     textAlign: 'center',
+    fontFamily: 'NotoSansJP',
   },
   subHeader: {
     fontSize: 10,
     marginBottom: 20,
     textAlign: 'center',
     color: '#666666',
+    fontFamily: 'NotoSansJP',
   },
   section: {
     marginBottom: 15,
@@ -32,6 +49,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 8,
     color: '#2563EB',
+    fontFamily: 'NotoSansJP',
   },
   fieldContainer: {
     marginBottom: 6,
@@ -41,16 +59,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#374151',
     marginBottom: 2,
+    fontFamily: 'NotoSansJP',
   },
   fieldValue: {
     fontSize: 9,
     color: '#111827',
     lineHeight: 1.4,
+    fontFamily: 'NotoSansJP',
   },
   listItem: {
     fontSize: 9,
     marginBottom: 2,
     paddingLeft: 10,
+    fontFamily: 'NotoSansJP',
   },
   separator: {
     borderBottomWidth: 1,
@@ -68,6 +89,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1E40AF',
     marginBottom: 5,
+    fontFamily: 'NotoSansJP',
   },
   guideSection: {
     backgroundColor: '#F0FDF4',
@@ -79,11 +101,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#059669',
     marginBottom: 5,
+    fontFamily: 'NotoSansJP',
   },
   guideText: {
     fontSize: 9,
     color: '#064E3B',
     lineHeight: 1.3,
+    fontFamily: 'NotoSansJP',
   }
 });
 
@@ -117,7 +141,7 @@ const LotsfulPDFDocument = ({ template }) => {
 
         {/* 企業基本情報 */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🏢 企業基本情報</Text>
+          <Text style={styles.sectionTitle}>企業基本情報</Text>
           
           <View style={styles.fieldContainer}>
             <Text style={styles.fieldLabel}>企業名</Text>
@@ -266,7 +290,7 @@ const LotsfulPDFDocument = ({ template }) => {
           
           {template.metadata?.selectedBusinessItems?.map((item, index) => (
             <Text key={index} style={styles.listItem}>
-              • {item.category} / {item.phase}: {item.item || item.title}
+              ・ {item.category} / {item.phase}: {item.item || item.title}
             </Text>
           ))}
           
@@ -287,9 +311,9 @@ const LotsfulPDFDocument = ({ template }) => {
           <View style={styles.fieldContainer}>
             <Text style={styles.fieldLabel}>完了ステップ</Text>
             <Text style={styles.fieldValue}>
-              {template.metadata?.step1Completed ? 'Step1 ✓' : 'Step1 ×'} / 
-              {template.metadata?.step2Completed ? 'Step2 ✓' : 'Step2 ×'} / 
-              {template.metadata?.step3Completed ? 'Step3 ✓' : 'Step3 ×'}
+              {template.metadata?.step1Completed ? 'Step1 完了' : 'Step1 未完了'} / 
+              {template.metadata?.step2Completed ? 'Step2 完了' : 'Step2 未完了'} / 
+              {template.metadata?.step3Completed ? 'Step3 完了' : 'Step3 未完了'}
             </Text>
           </View>
           
@@ -306,13 +330,26 @@ const LotsfulPDFDocument = ({ template }) => {
 
         {/* 活用ガイド */}
         <View style={styles.guideSection}>
-          <Text style={styles.guideTitle}>📋 活用ガイド</Text>
+          <Text style={styles.guideTitle}>活用ガイド</Text>
           <Text style={styles.guideText}>
-            ※このPDFは「1次情報」です。以下の用途でご活用ください：{'\n'}
-            1. 外部AIツール分析: Claude、ChatGPT等に入力{'\n'}
-            2. 社内共有: 関係者への情報共有資料{'\n'}
-            3. 提案書作成: 他システムでの2次加工素材{'\n'}
-            4. バックアップ: システム非依存の情報保存{'\n'}
+            ※このPDFは「1次情報」です。
+          </Text>
+          <Text style={styles.guideText}>
+            以下の用途でご活用ください：
+          </Text>
+          <Text style={styles.guideText}>
+            1. 外部AIツール分析: Claude、ChatGPT等に入力
+          </Text>
+          <Text style={styles.guideText}>
+            2. 社内共有: 関係者への情報共有資料
+          </Text>
+          <Text style={styles.guideText}>
+            3. 提案書作成: 他システムでの2次加工素材
+          </Text>
+          <Text style={styles.guideText}>
+            4. バックアップ: システム非依存の情報保存
+          </Text>
+          <Text style={styles.guideText}>
             5. 顧客説明: 分析プロセスの透明性確保
           </Text>
         </View>
