@@ -19,7 +19,7 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
   const [template, setTemplate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editingSections, setEditingSections] = useState(new Set());
-  const [expandedSections, setExpandedSections] = useState(new Set(['basic', 'project', 'business']));
+  const [expandedSections, setExpandedSections] = useState(new Set(['basic', 'research', 'analysis', 'project', 'business']));
   const [qualityScore, setQualityScore] = useState(0);
   const [missingFields, setMissingFields] = useState([]);
 
@@ -379,6 +379,187 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
               onChange={(value) => handleFieldUpdate('companyProfile', 'businessDescription', value)}
               multiline
             />
+          </div>
+        )}
+      </div>
+
+      {/* 事前リサーチ情報 */}
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <SectionHeader title="事前リサーチ情報" sectionId="research" icon={Eye} />
+        {expandedSections.has('research') && (
+          <div className="p-6 space-y-4">
+            <FieldEditor
+              label="ディープリサーチメモ"
+              value={template.researchData?.deepResearchMemo}
+              onChange={(value) => handleFieldUpdate('researchData', 'deepResearchMemo', value)}
+              multiline
+            />
+            <FieldEditor
+              label="最近の動き・ニュース"
+              value={template.researchData?.recentNews}
+              onChange={(value) => handleFieldUpdate('researchData', 'recentNews', value)}
+              multiline
+            />
+            <FieldEditor
+              label="組織文化・特徴"
+              value={template.researchData?.organizationCulture}
+              onChange={(value) => handleFieldUpdate('researchData', 'organizationCulture', value)}
+              multiline
+            />
+            <FieldEditor
+              label="仮説・洞察"
+              value={template.researchData?.hypothesisInsights}
+              onChange={(value) => handleFieldUpdate('researchData', 'hypothesisInsights', value)}
+              multiline
+            />
+          </div>
+        )}
+      </div>
+
+      {/* 現状分析 */}
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <SectionHeader title="現状分析" sectionId="analysis" icon={CheckCircle} />
+        {expandedSections.has('analysis') && (
+          <div className="p-6 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FieldEditor
+                label="事業フェーズ"
+                value={template.currentAnalysis?.businessPhase}
+                onChange={(value) => handleFieldUpdate('currentAnalysis', 'businessPhase', value)}
+              />
+              <FieldEditor
+                label="外部人材経験"
+                value={template.currentAnalysis?.externalTalentExperience}
+                onChange={(value) => handleFieldUpdate('currentAnalysis', 'externalTalentExperience', value)}
+              />
+            </div>
+            <FieldEditor
+              label="課題カテゴリ"
+              value={template.currentAnalysis?.challengeCategories?.join(', ')}
+              onChange={(value) => handleFieldUpdate('currentAnalysis', 'challengeCategories', value.split(',').map(s => s.trim()))}
+            />
+            <FieldEditor
+              label="これまでの取り組み"
+              value={template.currentAnalysis?.previousEfforts}
+              onChange={(value) => handleFieldUpdate('currentAnalysis', 'previousEfforts', value)}
+              multiline
+            />
+            <FieldEditor
+              label="失敗理由"
+              value={template.currentAnalysis?.failureReasons}
+              onChange={(value) => handleFieldUpdate('currentAnalysis', 'failureReasons', value)}
+              multiline
+            />
+            <FieldEditor
+              label="不足スキル"
+              value={template.currentAnalysis?.missingSkills?.join(', ')}
+              onChange={(value) => handleFieldUpdate('currentAnalysis', 'missingSkills', value.split(',').map(s => s.trim()))}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* プロジェクト設計 */}
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <SectionHeader title="プロジェクト設計" sectionId="project" icon={FileText} />
+        {expandedSections.has('project') && (
+          <div className="p-6 space-y-4">
+            <FieldEditor
+              label="課題要約"
+              value={template.projectDesign?.challengeSummary}
+              onChange={(value) => handleFieldUpdate('projectDesign', 'challengeSummary', value)}
+              multiline
+            />
+            <FieldEditor
+              label="緊急性の理由"
+              value={template.projectDesign?.urgencyReason}
+              onChange={(value) => handleFieldUpdate('projectDesign', 'urgencyReason', value)}
+              multiline
+            />
+            <FieldEditor
+              label="3ヶ月後の理想状態"
+              value={template.projectDesign?.idealState3Months}
+              onChange={(value) => handleFieldUpdate('projectDesign', 'idealState3Months', value)}
+              multiline
+            />
+            <FieldEditor
+              label="期待成果物"
+              value={template.projectDesign?.deliverables?.join(', ')}
+              onChange={(value) => handleFieldUpdate('projectDesign', 'deliverables', value.split(',').map(s => s.trim()))}
+            />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FieldEditor
+                label="月額予算"
+                value={template.projectDesign?.budget?.monthlyBudget?.toString()}
+                onChange={(value) => handleFieldUpdate('projectDesign', 'budget', {
+                  ...template.projectDesign?.budget,
+                  monthlyBudget: parseInt(value) || 0
+                })}
+              />
+              <FieldEditor
+                label="期間(ヶ月)"
+                value={template.projectDesign?.budget?.duration?.toString()}
+                onChange={(value) => handleFieldUpdate('projectDesign', 'budget', {
+                  ...template.projectDesign?.budget,
+                  duration: parseInt(value) || 0
+                })}
+              />
+              <FieldEditor
+                label="総予算"
+                value={template.projectDesign?.budget?.totalBudget?.toString()}
+                onChange={(value) => handleFieldUpdate('projectDesign', 'budget', {
+                  ...template.projectDesign?.budget,
+                  totalBudget: parseInt(value) || 0
+                })}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 選択業務項目 */}
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <SectionHeader title="選択業務項目" sectionId="business" icon={CheckCircle} />
+        {expandedSections.has('business') && (
+          <div className="p-6 space-y-4">
+            {template.metadata?.selectedBusinessItems?.length > 0 ? (
+              <div>
+                <div className="mb-4 p-4 bg-blue-50 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-blue-900">
+                      選択項目数: {template.metadata.selectedBusinessItems.length}項目
+                    </span>
+                    <div className="text-sm text-blue-700">
+                      稼働時間: {template.metadata.actualWorkingHours || '未設定'}時間/月 | 
+                      人数: {template.metadata.talentCount || 1}名
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {template.metadata.selectedBusinessItems.map((item, index) => (
+                    <div key={index} className="p-3 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="font-medium text-gray-900">{item.category}</span>
+                          <span className="mx-2 text-gray-400">/</span>
+                          <span className="text-gray-700">{item.phase}</span>
+                        </div>
+                        <span className="text-xs text-primary-600 bg-primary-50 px-2 py-1 rounded">
+                          業務項目
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-2">{item.item || item.title}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <AlertCircle className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                <p>業務項目が選択されていません</p>
+                <p className="text-sm mt-2">Step3で業務項目を選択してください</p>
+              </div>
+            )}
           </div>
         )}
       </div>
