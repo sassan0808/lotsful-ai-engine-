@@ -26,6 +26,16 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
   // テンプレート読み込み
   useEffect(() => {
     const loadedTemplate = TemplateManager.loadTemplate();
+    console.log('=== TEMPLATE INTEGRATION LOAD DEBUG ===');
+    console.log('Loaded template in TemplateIntegration:', loadedTemplate);
+    console.log('Company profile:', loadedTemplate?.companyProfile);
+    console.log('Company name:', loadedTemplate?.companyProfile?.name);
+    console.log('Research data:', loadedTemplate?.researchData);
+    console.log('Current analysis:', loadedTemplate?.currentAnalysis);
+    console.log('Project design:', loadedTemplate?.projectDesign);
+    console.log('Metadata:', loadedTemplate?.metadata);
+    console.log('=== TEMPLATE INTEGRATION LOAD DEBUG END ===');
+    
     setTemplate(loadedTemplate);
     calculateQualityScore(loadedTemplate);
     setLoading(false);

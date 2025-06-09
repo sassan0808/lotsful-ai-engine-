@@ -14,13 +14,27 @@ export class TemplateManager {
 
     try {
       const stored = sessionStorage.getItem(TEMPLATE_STORAGE_KEY);
+      console.log('=== TEMPLATE MANAGER LOAD DEBUG ===');
+      console.log('Raw stored data:', stored);
+      
       if (stored) {
         const parsed = JSON.parse(stored);
+        console.log('Parsed stored data:', parsed);
+        console.log('Parsed companyProfile:', parsed?.companyProfile);
+        console.log('Parsed metadata:', parsed?.metadata);
+        
         // 既存テンプレートに新しい構造をマージ（後方互換性）
-        return this.mergeWithDefaults(parsed);
+        const merged = this.mergeWithDefaults(parsed);
+        console.log('After mergeWithDefaults:', merged);
+        console.log('=== TEMPLATE MANAGER LOAD DEBUG END ===');
+        return merged;
+      } else {
+        console.log('No stored data found, returning empty template');
+        console.log('=== TEMPLATE MANAGER LOAD DEBUG END ===');
       }
     } catch (error) {
       console.warn('Failed to load template from storage:', error);
+      console.log('=== TEMPLATE MANAGER LOAD DEBUG END ===');
     }
 
     return createEmptyTemplate();
@@ -39,6 +53,12 @@ export class TemplateManager {
           lastUpdated: new Date().toISOString(),
         },
       };
+
+      console.log('=== TEMPLATE MANAGER SAVE DEBUG ===');
+      console.log('Saving template:', updatedTemplate);
+      console.log('Company profile being saved:', updatedTemplate?.companyProfile);
+      console.log('Metadata being saved:', updatedTemplate?.metadata);
+      console.log('=== TEMPLATE MANAGER SAVE DEBUG END ===');
 
       sessionStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(updatedTemplate));
     } catch (error) {
