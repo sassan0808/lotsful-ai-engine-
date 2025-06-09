@@ -136,17 +136,50 @@ ${selectedItems?.map(item => `- ${item.category} / ${item.phase}: ${item.item}`)
       throw new Error('No valid JSON found in response');
     }
     
-    const analysisResult = JSON.parse(jsonMatch[0]);
+    const parsedResult = JSON.parse(jsonMatch[0]);
     
-    // Add metadata
-    analysisResult.metadata = {
-      analysisDate: new Date().toISOString(),
-      inputDataSummary: {
-        selectedItemsCount: selectedItems?.length || 0,
-        workingHours: workingHours || 30,
-        selectedIndustries
+    // Transform to match ProposalTabs expected format
+    const analysisResult = {
+      companyProfile: {
+        name: parsedResult.challengeAnalysis.companyName,
+        industry: selectedIndustries || [],
+        employeeCount: parsedResult.challengeAnalysis.employeeCount,
+        ...template.companyProfile
       },
-      templateVersion: template.metadata?.version || '1.0'
+      currentAnalysis: {
+        businessPhase: template.currentAnalysis?.businessPhase || '成長期',
+        challengeCategories: parsedResult.challengeAnalysis.challengeMapping.map(m => m.area),
+        previousEfforts: parsedResult.challengeAnalysis.surfaceChallenges,
+        failureReasons: parsedResult.challengeAnalysis.rootChallenges,
+        ...template.currentAnalysis
+      },
+      projectDesign: {
+        challengeSummary: parsedResult.challengeAnalysis.rootChallenges,
+        idealState3Months: parsedResult.projectDesign.mission,
+        risksIfIgnored: parsedResult.challengeAnalysis.impactRisks.shortTerm,
+        scope: {
+          included: parsedResult.projectDesign.scopeIncluded,
+          excluded: parsedResult.projectDesign.scopeExcluded
+        },
+        phases: parsedResult.projectDesign.phases.map(phase => ({
+          name: phase.name,
+          period: phase.period,
+          goal: phase.purpose,
+          mainActivities: phase.tasks.map(t => t.name),
+          deliverables: phase.deliverables
+        })),
+        deliverables: parsedResult.projectDesign.phases.flatMap(p => p.deliverables),
+        ...template.projectDesign
+      },
+      metadata: {
+        analysisDate: new Date().toISOString(),
+        inputDataSummary: {
+          selectedItemsCount: selectedItems?.length || 0,
+          workingHours: workingHours || 30,
+          selectedIndustries
+        },
+        templateVersion: template.metadata?.version || '1.0'
+      }
     };
 
     return NextResponse.json(analysisResult);
@@ -154,48 +187,40 @@ ${selectedItems?.map(item => `- ${item.category} / ${item.phase}: ${item.item}`)
   } catch (error) {
     console.error('Error in analyze-step3:', error);
     
-    // Return fallback response
+    // Return fallback response in ProposalTabs expected format
     return NextResponse.json({
-      challengeAnalysis: {
-        companyName: template?.companyProfile?.name || '情報不足により特定不可',
-        industryName: selectedIndustries?.join(', ') || '情報不足により特定不可',
+      companyProfile: {
+        name: template?.companyProfile?.name || '情報不足により特定不可',
+        industry: selectedIndustries || [],
         employeeCount: template?.companyProfile?.employeeCount || '情報不足により特定不可',
-        challengeMapping: [
-          {
-            area: '情報不足',
-            current: 'テンプレート情報が不完全です',
-            ideal: '完全な情報に基づく分析が必要',
-            gap: '追加情報の収集が必要'
-          }
-        ],
-        surfaceChallenges: '情報不足により特定不可',
-        rootChallenges: '情報不足により特定不可',
-        impactRisks: {
-          shortTerm: '情報不足により予測不可',
-          mediumTerm: '情報不足により予測不可',
-          longTerm: '情報不足により予測不可'
-        }
+        ...template?.companyProfile
+      },
+      currentAnalysis: {
+        businessPhase: template?.currentAnalysis?.businessPhase || '情報不足',
+        challengeCategories: ['情報不足'],
+        previousEfforts: 'テンプレート情報が不完全です',
+        failureReasons: '追加情報の収集が必要',
+        ...template?.currentAnalysis
       },
       projectDesign: {
-        mission: '情報不足により特定不可',
-        scopeIncluded: ['詳細情報の収集', '課題の明確化'],
-        scopeExcluded: ['憶測に基づく提案'],
+        challengeSummary: '情報不足により特定不可',
+        idealState3Months: '情報不足により特定不可',
+        risksIfIgnored: '情報不足により予測不可',
+        scope: {
+          included: ['詳細情報の収集', '課題の明確化'],
+          excluded: ['憶測に基づく提案']
+        },
         phases: [
           {
             name: '情報収集フェーズ',
             period: '未定',
-            purpose: '適切な分析のための情報収集',
-            tasks: [
-              {
-                name: '追加ヒアリング',
-                detail: '必要情報の収集',
-                deadline: '情報提供次第'
-              }
-            ],
-            deliverables: ['情報収集レポート'],
-            milestone: '必要情報の収集完了'
+            goal: '適切な分析のための情報収集',
+            mainActivities: ['追加ヒアリング'],
+            deliverables: ['情報収集レポート']
           }
-        ]
+        ],
+        deliverables: ['情報収集レポート'],
+        ...template?.projectDesign
       },
       metadata: {
         analysisDate: new Date().toISOString(),

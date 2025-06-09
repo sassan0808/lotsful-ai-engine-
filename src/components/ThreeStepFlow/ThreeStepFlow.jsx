@@ -267,11 +267,11 @@ const ThreeStepFlow = () => {
     setTemplate(TemplateManager.loadTemplate());
   };
 
-  // 分析結果表示中
-  if (analysisResults) {
-    console.log('Rendering ProjectProposal with results:', analysisResults);
-    return <ProjectProposal proposal={analysisResults} onReset={handleReset} />;
-  }
+  // 分析結果表示中 - コメントアウトして5タブ表示に移行
+  // if (analysisResults) {
+  //   console.log('Rendering ProjectProposal with results:', analysisResults);
+  //   return <ProjectProposal proposal={analysisResults} onReset={handleReset} />;
+  // }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -321,9 +321,10 @@ const ThreeStepFlow = () => {
       </div>
 
       {/* メインコンテンツエリア */}
-      <div className="bg-white rounded-lg shadow-lg">
-        {/* ステップコンテンツ */}
-        <div className="p-8">
+      {!analysisResults && (
+        <div className="bg-white rounded-lg shadow-lg">
+          {/* ステップコンテンツ */}
+          <div className="p-8">
           {currentStep === 1 && (
             <CompanyInfoInput
               companyInfo={companyInfo}
@@ -437,6 +438,7 @@ const ThreeStepFlow = () => {
             )}
           </div>
         </div>
+      )}
       </div>
 
       {/* 分析準備完了メッセージ */}
@@ -451,7 +453,7 @@ const ThreeStepFlow = () => {
         </div>
       )}
 
-      {/* 5タブ提案書表示 */}
+      {/* 5タブ提案書表示 - 分析結果があれば表示 */}
       {analysisResults && (
         <div className="mt-8">
           <ProposalTabs 
