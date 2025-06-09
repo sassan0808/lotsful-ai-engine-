@@ -7,6 +7,7 @@ import ChallengesInput from '../ChallengesInput/ChallengesInput';
 import TemplateEditor from '../TemplateEditor/TemplateEditor';
 import IndustrySelector from '../IndustrySelector/IndustrySelector';
 import BusinessMatrix from '../BusinessMatrix/BusinessMatrix';
+import TemplateIntegration from '../TemplateIntegration/TemplateIntegration';
 import ProjectProposal from '../ProjectProposal/ProjectProposal';
 import ProposalTabs from '../ProposalTabs/ProposalTabs';
 import { analyzeWithGemini } from '../../utils/geminiAnalysisEngine';
@@ -141,8 +142,14 @@ const ThreeStepFlow = () => {
     },
     { 
       id: 3, 
-      title: '業務選択・分析', 
-      description: '必要な業務を選択しAI分析',
+      title: '業務選択', 
+      description: '必要な業務を選択',
+      required: true
+    },
+    { 
+      id: 4, 
+      title: 'データ統合確認', 
+      description: 'テンプレートデータ統合・最終確認',
       required: true
     }
   ];
@@ -153,6 +160,8 @@ const ThreeStepFlow = () => {
         return companyInfo.rawText.trim().length > 0;
       case 3:
         return true; // ステップ2は任意なので常に進める
+      case 4:
+        return selectedBusinessItems.length > 0 && selectedIndustries.length > 0;
       default:
         return true;
     }
@@ -169,7 +178,7 @@ const ThreeStepFlow = () => {
   };
 
   const handleNext = () => {
-    if (currentStep < 3 && canProceedToStep(currentStep + 1)) {
+    if (currentStep < 4 && canProceedToStep(currentStep + 1)) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -180,11 +189,8 @@ const ThreeStepFlow = () => {
     }
   };
 
-  const handleAnalyze = async () => {
-    if (!canAnalyze()) return;
-
-    setIsAnalyzing(true);
-
+  // Step3完了時の処理（業務選択のみ）
+  const handleStep3Complete = () => {
     // 最新のテンプレートを取得
     const currentTemplate = TemplateManager.loadTemplate();
     
@@ -195,19 +201,31 @@ const ThreeStepFlow = () => {
       talentCount
     });
     setTemplate(updatedTemplate);
+    
+    // Step4に進む
+    setCurrentStep(4);
+  };
+
+  // Step4での最終AI分析
+  const handleFinalAnalyze = async () => {
+    setIsAnalyzing(true);
+
+    // 最新のテンプレートを取得
+    const currentTemplate = TemplateManager.loadTemplate();
 
     const analysisData = {
-      template: updatedTemplate,
+      template: currentTemplate,
       selectedIndustries,
       selectedItems: selectedBusinessItems,
-      workingHours
+      workingHours,
+      talentCount
     };
 
     try {
-      console.log('Starting Step3 analysis with template data:', analysisData);
+      console.log('Starting final analysis with template data:', analysisData);
       
-      // Step3専用のAPIを使用
-      const response = await fetch('/api/analyze-step3', {
+      // 最終統合分析APIを使用
+      const response = await fetch('/api/analyze-final', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -220,10 +238,10 @@ const ThreeStepFlow = () => {
       }
 
       const results = await response.json();
-      console.log('Step3 analysis results:', results);
+      console.log('Final analysis results:', results);
       setAnalysisResults(results);
     } catch (error) {
-      console.error('Step3 analysis failed:', error);
+      console.error('Final analysis failed:', error);
       // フォールバック処理
       const fallbackData = {
         companyInfo,
@@ -371,6 +389,13 @@ const ThreeStepFlow = () => {
               )}
             </div>
           )}
+
+          {currentStep === 4 && (
+            <TemplateIntegration
+              onTemplateUpdate={handleTemplateUpdate}
+              onContinueToAnalysis={handleFinalAnalyze}
+            />
+          )}
         </div>
 
         {/* ナビゲーションボタン */}
@@ -406,6 +431,9 @@ const ThreeStepFlow = () => {
                   人数: {talentCount}名
                 </span>
               )}
+              {currentStep === 4 && (
+                <span>データ統合・確認画面</span>
+              )}
             </div>
 
             {/* アクションボタン */}
@@ -418,42 +446,28 @@ const ThreeStepFlow = () => {
                 <span>{currentStep === 2 ? '次へ (スキップ可)' : '次へ'}</span>
                 <ArrowRight className="h-5 w-5" />
               </button>
-            ) : (
+            ) : currentStep === 3 ? (
               <button
-                onClick={(e) => {
-                  console.log('AI分析ボタンクリック!');
-                  console.log('Button disabled?', !canAnalyze() || isAnalyzing);
-                  e.preventDefault();
-                  handleAnalyze();
-                }}
-                disabled={!canAnalyze() || isAnalyzing}
+                onClick={handleStep3Complete}
+                disabled={!canProceedToStep(4)}
                 className="flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
-                {isAnalyzing ? (
-                  <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span>AI分析中...</span>
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-5 w-5" />
-                    <span>AI分析を開始</span>
-                  </>
-                )}
+                <span>データ統合・確認へ</span>
+                <ArrowRight className="h-5 w-5" />
               </button>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
       )}
 
-      {/* 分析準備完了メッセージ */}
-      {currentStep === 3 && canAnalyze() && !isAnalyzing && !analysisResults && (
+      {/* Step3完了メッセージ */}
+      {currentStep === 3 && canProceedToStep(4) && !isAnalyzing && !analysisResults && (
         <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
           <div className="flex items-center space-x-2">
             <CheckCircle className="h-5 w-5 text-green-600" />
             <span className="text-green-800 font-medium">
-              分析準備完了！選択された情報を元にAIが最適なプロジェクト提案を生成します。
+              業務選択完了！次のステップでデータを統合・確認してからAI分析を実行します。
             </span>
           </div>
         </div>
