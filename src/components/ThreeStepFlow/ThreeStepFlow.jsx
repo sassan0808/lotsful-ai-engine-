@@ -18,6 +18,7 @@ const ThreeStepFlow = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResults, setAnalysisResults] = useState(null);
   const [template, setTemplate] = useState(null);
+  const [isTemplateFinalAnalyzing, setIsTemplateFinalAnalyzing] = useState(false);
 
   // 従来の状態（後方互換性のため維持）
   const [companyInfo, setCompanyInfo] = useState({
@@ -206,15 +207,29 @@ const ThreeStepFlow = () => {
     setCurrentStep(4);
   };
 
-  // Step4での最終AI分析（TemplateIntegrationから直接結果を受け取る場合もある）
+  // 分析開始のコールバック
+  const handleAnalysisStart = () => {
+    console.log('🚀 Analysis started from TemplateIntegration');
+    setIsTemplateFinalAnalyzing(true);
+  };
+
+  // 分析エラーのコールバック
+  const handleAnalysisError = () => {
+    console.log('❌ Analysis failed from TemplateIntegration');
+    setIsTemplateFinalAnalyzing(false);
+  };
+
+  // 分析完了のコールバック（結果受信）
   const handleFinalAnalyze = async (precomputedResults = null) => {
     console.log('=== handleFinalAnalyze CALLED ===');
     console.log('precomputedResults:', precomputedResults);
+    console.log('precomputedResults type:', typeof precomputedResults);
     
     if (precomputedResults) {
-      console.log('Setting precomputed analysis results to state');
+      console.log('✅ Received precomputed results, setting state...');
       setAnalysisResults(precomputedResults);
-      console.log('Analysis results set successfully');
+      setIsTemplateFinalAnalyzing(false); // 分析完了
+      console.log('✅ Analysis completed, results set');
       return;
     }
     
@@ -412,21 +427,44 @@ const ThreeStepFlow = () => {
           )}
 
           {currentStep === 4 && !analysisResults && (
-            <TemplateIntegration
-              onTemplateUpdate={handleTemplateUpdate}
-              onContinueToAnalysis={handleFinalAnalyze}
-            />
+            (() => {
+              console.log('=== TEMPLATE INTEGRATION RENDER CONDITION ===');
+              console.log('currentStep:', currentStep);
+              console.log('analysisResults:', analysisResults);
+              console.log('!analysisResults:', !analysisResults);
+              console.log('Rendering TemplateIntegration');
+              console.log('=== END TEMPLATE INTEGRATION RENDER CONDITION ===');
+              return (
+                <TemplateIntegration
+                  onTemplateUpdate={handleTemplateUpdate}
+                  onContinueToAnalysis={handleFinalAnalyze}
+                  onAnalysisStart={handleAnalysisStart}
+                  onAnalysisError={handleAnalysisError}
+                  isAnalyzing={isTemplateFinalAnalyzing}
+                />
+              );
+            })()
           )}
           
           {currentStep === 4 && analysisResults && (
-            <div className="bg-white rounded-lg shadow-sm">
-              <ProposalTabs 
-                template={template}
-                analysisResult={analysisResults}
-                onExport={() => alert('PDF出力機能は今後実装予定です')}
-                onShare={() => alert('共有機能は今後実装予定です')}
-              />
-            </div>
+            (() => {
+              console.log('=== PROPOSAL TABS RENDER CONDITION ===');
+              console.log('currentStep:', currentStep);
+              console.log('analysisResults:', analysisResults);
+              console.log('!!analysisResults:', !!analysisResults);
+              console.log('Rendering ProposalTabs');
+              console.log('=== END PROPOSAL TABS RENDER CONDITION ===');
+              return (
+                <div className="bg-white rounded-lg shadow-sm">
+                  <ProposalTabs 
+                    template={template}
+                    analysisResult={analysisResults}
+                    onExport={() => alert('PDF出力機能は今後実装予定です')}
+                    onShare={() => alert('共有機能は今後実装予定です')}
+                  />
+                </div>
+              );
+            })()
           )}
         </div>
 

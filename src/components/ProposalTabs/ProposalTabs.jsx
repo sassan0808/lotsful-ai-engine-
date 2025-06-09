@@ -12,6 +12,13 @@ const ProposalTabs = ({ template, analysisResult, onExport, onShare }) => {
   const [isGeneratingTalent, setIsGeneratingTalent] = useState(false);
   const [talentProposal, setTalentProposal] = useState(null);
 
+  // デバッグ：受信したデータを確認
+  console.log('=== PROPOSAL TABS DEBUG ===');
+  console.log('Received template:', template);
+  console.log('Received analysisResult:', analysisResult);
+  console.log('analysisResult type:', typeof analysisResult);
+  console.log('=== PROPOSAL TABS DEBUG END ===');
+
   // タブ定義
   const tabs = [
     { id: 1, name: '課題整理', icon: FileText, color: 'blue' },
@@ -120,6 +127,7 @@ const ProposalTabs = ({ template, analysisResult, onExport, onShare }) => {
             talentProposal={talentProposal}
             onGenerate={handleGenerateTalentProposal}
             isGenerating={isGeneratingTalent}
+            analysisResult={analysisResult}
           />
         )}
         {activeTab === 4 && <ExpectedResultsTab template={template} />}
@@ -131,8 +139,18 @@ const ProposalTabs = ({ template, analysisResult, onExport, onShare }) => {
 
 // Tab 1: 課題整理
 const ChallengeAnalysisTab = ({ analysisResult }) => {
-  const company = analysisResult?.companyProfile || {};
-  const challenges = analysisResult?.currentAnalysis || {};
+  // APIレスポンスの構造を確認
+  console.log('=== CHALLENGE ANALYSIS TAB DEBUG ===');
+  console.log('analysisResult in Tab1:', analysisResult);
+  console.log('analysisResult.tab1:', analysisResult?.tab1);
+  console.log('analysisResult.metadata:', analysisResult?.metadata);
+  console.log('=== CHALLENGE ANALYSIS TAB DEBUG END ===');
+  
+  // tab1のcontentから情報を抽出、もしくはmetadata.templateから取得
+  const template = analysisResult?.metadata?.template || {};
+  const company = template?.companyProfile || {};
+  const challenges = template?.currentAnalysis || {};
+  const tab1Content = analysisResult?.tab1?.content || '';
 
   return (
     <div className="space-y-6">
@@ -222,13 +240,25 @@ const ChallengeAnalysisTab = ({ analysisResult }) => {
           </div>
         </div>
       </div>
+
+      {/* AI生成コンテンツ表示 */}
+      {tab1Content && (
+        <div className="mt-6 bg-blue-50 rounded-lg p-4 border border-blue-200">
+          <h4 className="font-semibold text-blue-900 mb-3 flex items-center">
+            <Sparkles className="h-5 w-5 mr-2" />
+            AI分析結果
+          </h4>
+          <pre className="whitespace-pre-wrap text-sm text-gray-700">{tab1Content}</pre>
+        </div>
+      )}
     </div>
   );
 };
 
 // Tab 2: プロジェクト設計
 const ProjectDesignTab = ({ template, analysisResult }) => {
-  const project = analysisResult?.projectDesign || template?.projectDesign || {};
+  const projectTemplate = analysisResult?.metadata?.template?.projectDesign || template?.projectDesign || {};
+  const tab2Content = analysisResult?.tab2?.content || '';
   
   return (
     <div className="space-y-6">
@@ -302,12 +332,24 @@ const ProjectDesignTab = ({ template, analysisResult }) => {
           </div>
         ))}
       </div>
+
+      {/* AI生成コンテンツ表示 */}
+      {tab2Content && (
+        <div className="mt-6 bg-purple-50 rounded-lg p-4 border border-purple-200">
+          <h4 className="font-semibold text-purple-900 mb-3 flex items-center">
+            <Sparkles className="h-5 w-5 mr-2" />
+            AI分析結果
+          </h4>
+          <pre className="whitespace-pre-wrap text-sm text-gray-700">{tab2Content}</pre>
+        </div>
+      )}
     </div>
   );
 };
 
 // Tab 3: 人材提案
-const TalentProposalTab = ({ talentProposal, onGenerate, isGenerating }) => {
+const TalentProposalTab = ({ talentProposal, onGenerate, isGenerating, analysisResult }) => {
+  const tab3Content = analysisResult?.tab3?.content || '';
   const handleClick = (e) => {
     console.log('=== BUTTON CLICK DEBUG ===');
     console.log('Event:', e);
@@ -362,11 +404,24 @@ const TalentProposalTab = ({ talentProposal, onGenerate, isGenerating }) => {
   }
 
   return (
-    <TalentProposal 
-      proposal={talentProposal} 
-      onExport={() => console.log('Export from TalentProposal')}
-      onShare={() => console.log('Share from TalentProposal')}
-    />
+    <div className="space-y-6">
+      <TalentProposal 
+        proposal={talentProposal} 
+        onExport={() => console.log('Export from TalentProposal')}
+        onShare={() => console.log('Share from TalentProposal')}
+      />
+      
+      {/* AI生成コンテンツ表示 */}
+      {tab3Content && (
+        <div className="mt-6 bg-green-50 rounded-lg p-4 border border-green-200">
+          <h4 className="font-semibold text-green-900 mb-3 flex items-center">
+            <Sparkles className="h-5 w-5 mr-2" />
+            AI分析結果
+          </h4>
+          <pre className="whitespace-pre-wrap text-sm text-gray-700">{tab3Content}</pre>
+        </div>
+      )}
+    </div>
   );
 };
 

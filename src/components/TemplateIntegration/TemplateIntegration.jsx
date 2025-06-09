@@ -15,13 +15,16 @@ import {
 import { TemplateManager } from '../../utils/templateManager';
 import { downloadPDF } from '../../utils/pdfGenerator';
 
-const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
+const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis, onAnalysisStart, onAnalysisError, isAnalyzing: externalIsAnalyzing }) => {
   const [template, setTemplate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editingSections, setEditingSections] = useState(new Set());
   const [expandedSections, setExpandedSections] = useState(new Set(['basic', 'research', 'analysis', 'project', 'business']));
   const [qualityScore, setQualityScore] = useState(0);
   const [missingFields, setMissingFields] = useState([]);
+  
+  // 外部から管理される分析状態を使用
+  const isAnalyzing = externalIsAnalyzing || false;
 
   // テンプレート読み込み
   useEffect(() => {
@@ -175,6 +178,11 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
       return;
     }
 
+    // 分析開始（外部状態管理）
+    if (onAnalysisStart) {
+      onAnalysisStart();
+    }
+
     try {
       console.log('=== DIRECT ANALYSIS DEBUG ===');
       console.log('Using same template as PDF:', template);
@@ -221,6 +229,10 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
       if (!template?.metadata?.step1Completed) {
         console.warn('⚠️ Step1 was not completed. Basic company information may be missing.');
         alert('⚠️ Step1の企業情報分析が完了していません。Step1で「AI分析実行」ボタンを押してからお試しください。');
+        // Step1未完了時も分析状態をリセット
+        if (onAnalysisError) {
+          onAnalysisError();
+        }
         return;
       }
       console.log('=== DATA VALIDATION END ===');
@@ -264,6 +276,10 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
     } catch (error) {
       console.error('Direct analysis failed:', error);
       alert(`分析に失敗しました: ${error.message}`);
+      // エラー時は分析状態をリセット
+      if (onAnalysisError) {
+        onAnalysisError();
+      }
     }
   };
 
@@ -404,7 +420,20 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 relative">
+      {/* 分析中のオーバーレイ */}
+      {isAnalyzing && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-8 max-w-md mx-auto text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary-600 mx-auto mb-4"></div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">AI分析を実行中...</h3>
+            <p className="text-gray-600">
+              テンプレートデータを基に包括的な分析を行っています。<br />
+              しばらくお待ちください。
+            </p>
+          </div>
+        </div>
+      )}
       {/* データ品質スコア */}
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="flex items-center justify-between mb-4">
@@ -707,11 +736,20 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
             </button>
             <button
               onClick={handleDirectAnalysis}
-              disabled={qualityScore < 50}
-              className="flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={qualityScore < 50 || isAnalyzing}
+              className="flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
-              <CheckCircle className="h-5 w-5" />
-              <span>最終AI分析を開始</span>
+              {isAnalyzing ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <span>AI分析中...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-5 w-5" />
+                  <span>最終AI分析を開始</span>
+                </>
+              )}
             </button>
           </div>
         </div>
