@@ -13,6 +13,7 @@ import {
   Download
 } from 'lucide-react';
 import { TemplateManager } from '../../utils/templateManager';
+import { downloadPDF } from '../../utils/pdfGenerator';
 
 const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
   const [template, setTemplate] = useState(null);
@@ -30,41 +31,49 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
     setLoading(false);
   }, []);
 
-  // データ品質スコア計算
+  // 分析精度スコア計算
   const calculateQualityScore = (templateData) => {
     if (!templateData) return;
 
-    const checkFields = [
-      // 企業基本情報
-      { section: 'companyProfile', field: 'name', weight: 10 },
-      { section: 'companyProfile', field: 'industry', weight: 8 },
-      { section: 'companyProfile', field: 'employeeCount', weight: 5 },
-      { section: 'companyProfile', field: 'revenue', weight: 5 },
-      { section: 'companyProfile', field: 'businessDescription', weight: 8 },
+    const analysisWeights = [
+      // 🔴 超重要（15-20点）- AI分析の核となる情報
+      { section: 'metadata', field: 'selectedBusinessItems', weight: 20, label: '選択された業務項目', category: 'critical' },
+      { section: 'companyProfile', field: 'name', weight: 15, label: '企業名', category: 'critical' },
+      { section: 'currentAnalysis', field: 'challengeCategories', weight: 15, label: '課題カテゴリ', category: 'critical' },
       
-      // リサーチ情報
-      { section: 'researchData', field: 'deepResearchMemo', weight: 10 },
-      { section: 'researchData', field: 'organizationCulture', weight: 6 },
-      { section: 'researchData', field: 'hypothesisInsights', weight: 8 },
+      // 🟡 重要（8-12点）- 分析精度を大幅向上
+      { section: 'researchData', field: 'deepResearchMemo', weight: 12, label: 'ディープリサーチメモ', category: 'important' },
+      { section: 'projectDesign', field: 'challengeSummary', weight: 10, label: '課題要約', category: 'important' },
+      { section: 'companyProfile', field: 'industry', weight: 10, label: '業界', category: 'important' },
+      { section: 'currentAnalysis', field: 'previousEfforts', weight: 8, label: 'これまでの取り組み', category: 'important' },
+      { section: 'currentAnalysis', field: 'teamComposition', weight: 8, label: 'チーム構成', category: 'important' },
       
-      // 現状分析
-      { section: 'currentAnalysis', field: 'businessPhase', weight: 6 },
-      { section: 'currentAnalysis', field: 'challengeCategories', weight: 8 },
-      { section: 'currentAnalysis', field: 'previousEfforts', weight: 6 },
-      { section: 'currentAnalysis', field: 'teamComposition', weight: 7 },
+      // 🟢 中程度（5-7点）- 背景理解に必要
+      { section: 'projectDesign', field: 'urgencyReason', weight: 7, label: '緊急性の理由', category: 'moderate' },
+      { section: 'currentAnalysis', field: 'failureReasons', weight: 6, label: '失敗理由', category: 'moderate' },
+      { section: 'projectDesign', field: 'idealState3Months', weight: 6, label: '3ヶ月後の理想状態', category: 'moderate' },
+      { section: 'currentAnalysis', field: 'missingSkills', weight: 6, label: '不足スキル', category: 'moderate' },
+      { section: 'researchData', field: 'organizationCulture', weight: 5, label: '組織文化・特徴', category: 'moderate' },
+      { section: 'researchData', field: 'hypothesisInsights', weight: 5, label: '仮説・洞察', category: 'moderate' },
       
-      // プロジェクト設計
-      { section: 'projectDesign', field: 'challengeSummary', weight: 8 },
-      { section: 'projectDesign', field: 'urgencyReason', weight: 5 },
-      { section: 'projectDesign', field: 'idealState3Months', weight: 6 },
-      { section: 'projectDesign', field: 'budget', weight: 5 },
+      // 🔵 補助的（2-4点）- あると良い
+      { section: 'companyProfile', field: 'businessDescription', weight: 4, label: '事業内容', category: 'supplementary' },
+      { section: 'projectDesign', field: 'budget', weight: 4, label: '予算', category: 'supplementary' },
+      { section: 'companyProfile', field: 'employeeCount', weight: 3, label: '従業員数', category: 'supplementary' },
+      { section: 'companyProfile', field: 'revenue', weight: 3, label: '年商', category: 'supplementary' },
+      { section: 'companyProfile', field: 'headquarters', weight: 2, label: '本社所在地', category: 'supplementary' },
+      { section: 'researchData', field: 'recentNews', weight: 2, label: '最近の動き・ニュース', category: 'supplementary' },
+      
+      // Step3固有の重要項目
+      { section: 'metadata', field: 'actualWorkingHours', weight: 12, label: '実際の稼働時間', category: 'important' },
+      { section: 'metadata', field: 'talentCount', weight: 10, label: '希望人数', category: 'important' },
     ];
 
     let totalScore = 0;
     let maxScore = 0;
     const missing = [];
 
-    checkFields.forEach(({ section, field, weight }) => {
+    analysisWeights.forEach(({ section, field, weight, label, category }) => {
       maxScore += weight;
       const value = templateData[section]?.[field];
       
@@ -79,7 +88,7 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
           totalScore += weight;
         }
       } else {
-        missing.push({ section, field, weight });
+        missing.push({ section, field, weight, label, category });
       }
     });
 
@@ -147,6 +156,26 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
     const currentArray = template[section][field] || [];
     const newArray = currentArray.filter((_, i) => i !== index);
     handleFieldUpdate(section, field, newArray);
+  };
+
+  // PDF出力処理
+  const handlePDFExport = () => {
+    if (!template) {
+      alert('テンプレートデータが見つかりません');
+      return;
+    }
+
+    try {
+      const result = downloadPDF(template);
+      if (result.success) {
+        alert(`PDF出力完了: ${result.filename}`);
+      } else {
+        alert(`PDF出力エラー: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('PDF export error:', error);
+      alert('PDF出力中にエラーが発生しました');
+    }
   };
 
   if (loading) {
@@ -264,7 +293,7 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
           <div className="flex items-center space-x-4">
             <div className="text-right">
               <div className="text-2xl font-bold text-primary-600">{qualityScore}/100</div>
-              <div className="text-sm text-gray-500">データ品質スコア</div>
+              <div className="text-sm text-gray-500">分析精度スコア</div>
             </div>
             <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
               qualityScore >= 80 ? 'bg-green-100 text-green-600' :
@@ -281,14 +310,31 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
         </div>
 
         {missingFields.length > 0 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h4 className="font-medium text-yellow-800 mb-2">不足情報の改善提案</h4>
-            <ul className="text-sm text-yellow-700 space-y-1">
-              {missingFields.slice(0, 5).map((field, index) => (
-                <li key={index}>• {field.section}.{field.field} の入力で品質向上</li>
-              ))}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="font-medium text-blue-800 mb-2">🎯 分析精度向上のための推奨入力</h4>
+            <ul className="text-sm space-y-1">
+              {missingFields
+                .sort((a, b) => b.weight - a.weight) // 重要度順にソート
+                .slice(0, 5)
+                .map((field, index) => {
+                  const emoji = field.category === 'critical' ? '🔴' : 
+                               field.category === 'important' ? '🟡' : 
+                               field.category === 'moderate' ? '🟢' : '🔵';
+                  const impact = field.weight >= 15 ? '大きく影響' :
+                                field.weight >= 8 ? '向上' :
+                                field.weight >= 5 ? '改善' : '補強';
+                  return (
+                    <li key={index} className={`${
+                      field.category === 'critical' ? 'text-red-700' :
+                      field.category === 'important' ? 'text-orange-700' :
+                      field.category === 'moderate' ? 'text-green-700' : 'text-blue-700'
+                    }`}>
+                      {emoji} <strong>{field.label}</strong> (+{field.weight}点) - 分析精度を{impact}
+                    </li>
+                  );
+                })}
               {missingFields.length > 5 && (
-                <li className="text-yellow-600">他 {missingFields.length - 5} 項目...</li>
+                <li className="text-blue-600">他 {missingFields.length - 5} 項目...</li>
               )}
             </ul>
           </div>
@@ -345,12 +391,17 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
               最終AI分析の準備
             </h3>
             <p className="text-primary-700 text-sm">
-              データ品質スコア: {qualityScore}/100 
-              {qualityScore >= 70 ? ' - 分析実行可能' : ' - もう少し情報を追加することをお勧めします'}
+              分析精度スコア: {qualityScore}/100 
+              {qualityScore >= 70 ? ' - 高精度分析が可能です' : 
+               qualityScore >= 50 ? ' - 分析実行可能（推奨項目の入力で精度向上）' : 
+               ' - 重要項目の入力で分析精度が大幅に向上します'}
             </p>
           </div>
           <div className="flex items-center space-x-4">
-            <button className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+            <button 
+              onClick={handlePDFExport}
+              className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+            >
               <Download className="h-4 w-4" />
               <span>PDF出力</span>
             </button>
