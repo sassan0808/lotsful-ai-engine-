@@ -77,9 +77,16 @@ export async function POST(request) {
 }
 
 function createFinalAnalysisPrompt(template, selectedItems, workingHours, talentCount) {
-  // デバッグ用ログ
-  console.log('Template data in createFinalAnalysisPrompt:', JSON.stringify(template, null, 2));
+  // 徹底的デバッグ
+  console.log('=== ANALYZE-FINAL API DEBUG START ===');
+  console.log('Received template:', template);
+  console.log('Template type:', typeof template);
+  console.log('Template companyProfile:', template?.companyProfile);
+  console.log('Company name specifically:', template?.companyProfile?.name);
   console.log('Selected items:', selectedItems);
+  console.log('Working hours:', workingHours);
+  console.log('Talent count:', talentCount);
+  console.log('=== ANALYZE-FINAL API DEBUG END ===');
   
   return `
 あなたは経験豊富なビジネスコンサルタントです。蓄積されたテンプレートデータと選択された業務項目から、包括的な5タブ提案書を生成してください。

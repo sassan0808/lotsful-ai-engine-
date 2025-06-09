@@ -158,6 +158,58 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
     handleFieldUpdate(section, field, newArray);
   };
 
+  // 直接分析実行（データ確実バージョン）
+  const handleDirectAnalysis = async () => {
+    if (!template) {
+      alert('テンプレートデータが見つかりません');
+      return;
+    }
+
+    try {
+      console.log('=== DIRECT ANALYSIS DEBUG ===');
+      console.log('Using same template as PDF:', template);
+      console.log('Company Profile:', template?.companyProfile);
+      console.log('Research Data:', template?.researchData);
+      console.log('Current Analysis:', template?.currentAnalysis);
+      console.log('Project Design:', template?.projectDesign);
+      console.log('Metadata:', template?.metadata);
+      console.log('=== DIRECT ANALYSIS DEBUG END ===');
+
+      const analysisData = {
+        template: template,
+        selectedIndustries: [],
+        selectedItems: template?.metadata?.selectedBusinessItems || [],
+        workingHours: template?.metadata?.actualWorkingHours || 30,
+        talentCount: template?.metadata?.talentCount || 1
+      };
+
+      console.log('Analysis data being sent:', analysisData);
+
+      const response = await fetch('/api/analyze-final', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(analysisData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Analysis request failed: ${response.status}`);
+      }
+
+      const results = await response.json();
+      console.log('Direct analysis results:', results);
+      
+      // 結果を親に通知
+      if (onContinueToAnalysis) {
+        onContinueToAnalysis(results);
+      }
+    } catch (error) {
+      console.error('Direct analysis failed:', error);
+      alert(`分析に失敗しました: ${error.message}`);
+    }
+  };
+
   // PDF出力処理
   const handlePDFExport = async () => {
     if (!template) {
@@ -166,7 +218,12 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
     }
 
     try {
-      console.log('PDF export started with template:', template);
+      console.log('=== PDF EXPORT TEMPLATE DEBUG ===');
+      console.log('PDF template:', template);
+      console.log('PDF companyProfile:', template?.companyProfile);
+      console.log('PDF name:', template?.companyProfile?.name);
+      console.log('=== PDF EXPORT TEMPLATE DEBUG END ===');
+      
       const result = await downloadPDF(template);
       console.log('PDF export result:', result);
       
@@ -592,7 +649,7 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis }) => {
               <span>PDF出力</span>
             </button>
             <button
-              onClick={onContinueToAnalysis}
+              onClick={handleDirectAnalysis}
               disabled={qualityScore < 50}
               className="flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
