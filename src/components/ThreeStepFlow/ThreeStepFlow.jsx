@@ -196,14 +196,17 @@ const ThreeStepFlow = () => {
 
   const handlePrevious = () => {
     if (currentStep > 1) {
-      // 5タブ提案書表示中にStep4に戻る場合、分析結果をクリア
-      if (analysisResults && currentStep === 4) {
-        setAnalysisResults(null);
-        setIsTemplateFinalAnalyzing(false);
-      } else {
-        setCurrentStep(currentStep - 1);
-      }
+      setCurrentStep(currentStep - 1);
     }
+  };
+
+  // 5タブから戻る専用ハンドラー
+  const handleBackToDataConfirmation = () => {
+    console.log('📊 5タブから確認画面に戻る');
+    setAnalysisResults(null);
+    setIsTemplateFinalAnalyzing(false);
+    // Step4に戻る
+    setCurrentStep(4);
   };
 
   // Step3完了時の処理（業務選択のみ）
@@ -307,175 +310,206 @@ const ThreeStepFlow = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* ステップインジケーター */}
       <div className="mb-8">
-        <div className="flex items-center justify-between">
-          {steps.map((step, index) => (
-            <div key={step.id} className="flex items-center">
-              <div className="flex flex-col items-center">
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold ${
-                    currentStep === step.id
-                      ? 'bg-primary-600 text-white'
-                      : currentStep > step.id
-                      ? 'bg-green-500 text-white'
-                      : 'bg-gray-200 text-gray-600'
-                  }`}
-                >
-                  {currentStep > step.id ? (
-                    <CheckCircle className="h-5 w-5" />
-                  ) : (
-                    step.id
-                  )}
-                </div>
-                <div className="mt-2 text-center">
-                  <div className={`text-sm font-medium ${
-                    currentStep === step.id ? 'text-primary-600' : 'text-gray-600'
-                  }`}>
-                    {step.title}
+        {!analysisResults ? (
+          // 通常のステップインジケーター
+          <div className="flex items-center justify-between">
+            {steps.map((step, index) => (
+              <div key={step.id} className="flex items-center">
+                <div className="flex flex-col items-center">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold ${
+                      currentStep === step.id
+                        ? 'bg-primary-600 text-white'
+                        : currentStep > step.id
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gray-200 text-gray-600'
+                    }`}
+                  >
+                    {currentStep > step.id ? (
+                      <CheckCircle className="h-5 w-5" />
+                    ) : (
+                      step.id
+                    )}
                   </div>
-                  <div className="text-xs text-gray-500">
-                    {step.description}
+                  <div className="mt-2 text-center">
+                    <div className={`text-sm font-medium ${
+                      currentStep === step.id ? 'text-primary-600' : 'text-gray-600'
+                    }`}>
+                      {step.title}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {step.description}
+                    </div>
+                    {step.required && (
+                      <div className="text-xs text-red-500 mt-1">必須</div>
+                    )}
                   </div>
-                  {step.required && (
-                    <div className="text-xs text-red-500 mt-1">必須</div>
-                  )}
                 </div>
+                {index < steps.length - 1 && (
+                  <div className={`flex-1 h-0.5 mx-4 ${
+                    currentStep > step.id ? 'bg-green-500' : 'bg-gray-200'
+                  }`} />
+                )}
               </div>
-              {index < steps.length - 1 && (
-                <div className={`flex-1 h-0.5 mx-4 ${
-                  currentStep > step.id ? 'bg-green-500' : 'bg-gray-200'
-                }`} />
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* メインコンテンツエリア */}
-      <div className="bg-white rounded-lg shadow-lg">
-        {/* ステップコンテンツ */}
-        <div className="p-8">
-          {currentStep === 1 && (
-            <CompanyInfoInput
-              companyInfo={companyInfo}
-              onCompanyInfoChange={handleCompanyInfoChange}
-              template={template}
-            />
-          )}
-
-          {currentStep === 2 && (
-            <TemplateEditor
-              onTemplateUpdate={handleTemplateUpdate}
-            />
-          )}
-
-          {currentStep === 3 && (
-            <div className="space-y-8">
-              <IndustrySelector
-                selectedIndustries={selectedIndustries}
-                onIndustryChange={setSelectedIndustries}
-                autoDetectedIndustries={companyInfo.extracted?.industries || []}
-              />
-              
-              {selectedIndustries.length > 0 && (
-                <div className="border-t pt-8">
-                  <div className="text-center mb-6">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                      業務項目選択
-                    </h3>
-                    <p className="text-gray-600">
-                      切り出したい業務項目をマトリックスから選択してください
-                    </p>
-                  </div>
-                  <BusinessMatrix
-                    selectedItems={selectedBusinessItems}
-                    onSelectionChange={setSelectedBusinessItems}
-                    workingHours={workingHours}
-                    onWorkingHoursChange={setWorkingHours}
-                    talentCount={talentCount}
-                    onTalentCountChange={setTalentCount}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-
-          {currentStep === 4 && (
-            <TemplateIntegration
-              onTemplateUpdate={handleTemplateUpdate}
-              onContinueToAnalysis={handleFinalAnalyze}
-              onAnalysisStart={handleAnalysisStart}
-              onAnalysisError={handleAnalysisError}
-              isAnalyzing={isTemplateFinalAnalyzing}
-            />
-          )}
-        </div>
-
-        {/* ナビゲーションボタン */}
-        {!analysisResults && (
-          <div className="flex items-center justify-between p-8 bg-gray-50 rounded-b-lg">
-            <div>
-              {currentStep > 1 && (
-              <button
-                onClick={handlePrevious}
-                className="flex items-center space-x-2 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-              >
-                <ArrowLeft className="h-5 w-5" />
-                <span>前へ</span>
-              </button>
-            )}
+            ))}
           </div>
-
-          <div className="flex items-center space-x-4">
-            {/* 進捗情報 */}
-            <div className="text-sm text-gray-600">
-              {currentStep === 1 && (
-                <span>
-                  {companyInfo.rawText.length > 0 ? '✓ ' : ''}
-                  文字数: {companyInfo.rawText.length}
-                </span>
-              )}
-              {currentStep === 2 && (
-                <span>任意入力（スキップ可能）</span>
-              )}
-              {currentStep === 3 && (
-                <span>
-                  業種: {selectedIndustries.length}個、
-                  業務: {selectedBusinessItems.length}項目、
-                  人数: {talentCount}名
-                </span>
-              )}
-              {currentStep === 4 && !analysisResults && (
-                <span>データ統合・確認画面</span>
-              )}
-              {currentStep === 4 && analysisResults && (
-                <span>5タブ提案書完成</span>
-              )}
+        ) : (
+          // 5タブ完成時の表示
+          <div className="text-center">
+            <div className="flex items-center justify-center space-x-3 mb-4">
+              <div className="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center">
+                <CheckCircle className="h-8 w-8" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-green-600">5タブ提案書完成！</h2>
+                <p className="text-green-700">AI分析による包括的なプロジェクト提案書が完成しました</p>
+              </div>
             </div>
-
-            {/* アクションボタン */}
-            {currentStep < 3 ? (
-              <button
-                onClick={handleNext}
-                disabled={!canProceedToStep(currentStep + 1)}
-                className="flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              >
-                <span>{currentStep === 2 ? '次へ (スキップ可)' : '次へ'}</span>
-                <ArrowRight className="h-5 w-5" />
-              </button>
-            ) : currentStep === 3 ? (
-              <button
-                onClick={handleStep3Complete}
-                disabled={!canProceedToStep(4)}
-                className="flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              >
-                <span>データ統合・確認へ</span>
-                <ArrowRight className="h-5 w-5" />
-              </button>
-            ) : null}
+            <div className="flex items-center justify-center space-x-8 text-sm text-gray-600">
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span>Step1: 企業情報収集</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span>Step2: 情報統合編集</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span>Step3: 業務選択</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span>Step4: AI分析完了</span>
+              </div>
             </div>
           </div>
         )}
       </div>
+
+      {/* メインコンテンツエリア - 5タブ表示時は非表示 */}
+      {!analysisResults && (
+        <div className="bg-white rounded-lg shadow-lg">
+          {/* ステップコンテンツ */}
+          <div className="p-8">
+            {currentStep === 1 && (
+              <CompanyInfoInput
+                companyInfo={companyInfo}
+                onCompanyInfoChange={handleCompanyInfoChange}
+                template={template}
+              />
+            )}
+
+            {currentStep === 2 && (
+              <TemplateEditor
+                onTemplateUpdate={handleTemplateUpdate}
+              />
+            )}
+
+            {currentStep === 3 && (
+              <div className="space-y-8">
+                <IndustrySelector
+                  selectedIndustries={selectedIndustries}
+                  onIndustryChange={setSelectedIndustries}
+                  autoDetectedIndustries={companyInfo.extracted?.industries || []}
+                />
+                
+                {selectedIndustries.length > 0 && (
+                  <div className="border-t pt-8">
+                    <div className="text-center mb-6">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                        業務項目選択
+                      </h3>
+                      <p className="text-gray-600">
+                        切り出したい業務項目をマトリックスから選択してください
+                      </p>
+                    </div>
+                    <BusinessMatrix
+                      selectedItems={selectedBusinessItems}
+                      onSelectionChange={setSelectedBusinessItems}
+                      workingHours={workingHours}
+                      onWorkingHoursChange={setWorkingHours}
+                      talentCount={talentCount}
+                      onTalentCountChange={setTalentCount}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {currentStep === 4 && (
+              <TemplateIntegration
+                onTemplateUpdate={handleTemplateUpdate}
+                onContinueToAnalysis={handleFinalAnalyze}
+                onAnalysisStart={handleAnalysisStart}
+                onAnalysisError={handleAnalysisError}
+                isAnalyzing={isTemplateFinalAnalyzing}
+              />
+            )}
+          </div>
+
+          {/* ナビゲーションボタン */}
+          <div className="flex items-center justify-between p-8 bg-gray-50 rounded-b-lg">
+            <div>
+              {currentStep > 1 && (
+                <button
+                  onClick={handlePrevious}
+                  className="flex items-center space-x-2 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                  <span>前へ</span>
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center space-x-4">
+              {/* 進捗情報 */}
+              <div className="text-sm text-gray-600">
+                {currentStep === 1 && (
+                  <span>
+                    {companyInfo.rawText.length > 0 ? '✓ ' : ''}
+                    文字数: {companyInfo.rawText.length}
+                  </span>
+                )}
+                {currentStep === 2 && (
+                  <span>任意入力（スキップ可能）</span>
+                )}
+                {currentStep === 3 && (
+                  <span>
+                    業種: {selectedIndustries.length}個、
+                    業務: {selectedBusinessItems.length}項目、
+                    人数: {talentCount}名
+                  </span>
+                )}
+                {currentStep === 4 && (
+                  <span>データ統合・確認画面</span>
+                )}
+              </div>
+
+              {/* アクションボタン */}
+              {currentStep < 3 ? (
+                <button
+                  onClick={handleNext}
+                  disabled={!canProceedToStep(currentStep + 1)}
+                  className="flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <span>{currentStep === 2 ? '次へ (スキップ可)' : '次へ'}</span>
+                  <ArrowRight className="h-5 w-5" />
+                </button>
+              ) : currentStep === 3 ? (
+                <button
+                  onClick={handleStep3Complete}
+                  disabled={!canProceedToStep(4)}
+                  className="flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <span>データ統合・確認へ</span>
+                  <ArrowRight className="h-5 w-5" />
+                </button>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* ProposalTabs表示エリア */}
       {analysisResults && (
@@ -501,7 +535,7 @@ const ThreeStepFlow = () => {
           <div className="flex items-center justify-between p-8 bg-gray-50 rounded-lg">
             <div>
               <button
-                onClick={handlePrevious}
+                onClick={handleBackToDataConfirmation}
                 className="flex items-center space-x-2 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -510,7 +544,7 @@ const ThreeStepFlow = () => {
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-600">
-                <span>5タブ提案書が完成しました</span>
+                <span>✅ 5タブ提案書が完成しました</span>
               </div>
               <button
                 onClick={handleReset}
