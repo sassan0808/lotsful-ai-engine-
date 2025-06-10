@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { flushSync } from 'react-dom';
 import { ArrowRight, ArrowLeft, Loader2, Send, CheckCircle } from 'lucide-react';
 import CompanyInfoInput from '../CompanyInfo/CompanyInfoInput';
 import ChallengesInput from '../ChallengesInput/ChallengesInput';
@@ -241,11 +242,16 @@ const ThreeStepFlow = () => {
     console.log('🎯 Received analysisResults:', analysisResults);
     console.log('🎯 Setting analysisResults directly...');
     
-    // シンプルに直接設定
-    setAnalysisResults(analysisResults);
-    setIsTemplateFinalAnalyzing(false);
+    // React 18の自動バッチングを回避してすぐに更新
+    flushSync(() => {
+      setIsTemplateFinalAnalyzing(false);
+    });
     
-    console.log('✅ Analysis results set successfully');
+    flushSync(() => {
+      setAnalysisResults(analysisResults);
+    });
+    
+    console.log('✅ Analysis results set with flushSync');
   };
 
   const handleReset = () => {
@@ -282,6 +288,14 @@ const ThreeStepFlow = () => {
   //   console.log('Rendering ProjectProposal with results:', analysisResults);
   //   return <ProjectProposal proposal={analysisResults} onReset={handleReset} />;
   // }
+
+  // コンポーネントレンダー時のデバッグ
+  console.log('🔄 ThreeStepFlow RENDER:', {
+    currentStep,
+    hasAnalysisResults: !!analysisResults,
+    isTemplateFinalAnalyzing,
+    timestamp: new Date().toLocaleTimeString()
+  });
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
