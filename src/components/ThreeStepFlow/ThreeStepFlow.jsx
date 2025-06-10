@@ -267,8 +267,8 @@ const ThreeStepFlow = () => {
     });
     
     if (precomputedResults && (precomputedResults.tab1 || precomputedResults.tab2 || precomputedResults.tab3)) {
-      console.log('✅ VALID RESULTS RECEIVED - Processing via useEffect...');
-      console.log('🔥 About to call setPendingAnalysisResults with:', precomputedResults);
+      console.log('✅ VALID RESULTS RECEIVED - Processing directly...');
+      console.log('🔥 Bypassing pendingAnalysisResults, setting analysisResults directly');
       console.log('🔥 precomputedResults structure check:', {
         hasTab1: !!precomputedResults.tab1,
         hasTab2: !!precomputedResults.tab2,
@@ -277,7 +277,10 @@ const ThreeStepFlow = () => {
         tab2Content: precomputedResults.tab2?.content?.substring(0, 50) + '...',
         tab3Content: precomputedResults.tab3?.content?.substring(0, 50) + '...'
       });
-      setPendingAnalysisResults(precomputedResults);
+      
+      // useEffectを経由せず、直接設定
+      setAnalysisResults(precomputedResults);
+      setIsTemplateFinalAnalyzing(false);
       return;
     } else {
       console.error('❌ Invalid or empty analysis results received');
