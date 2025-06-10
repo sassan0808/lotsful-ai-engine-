@@ -90,13 +90,14 @@ export class TemplateManager {
     return this.updateTemplate(updates);
   }
 
-  // Step2の更新（現状分析・プロジェクト設計）
+  // Step2の更新（現状分析・プロジェクト設計）- デザイン原則準拠
   static updateStep2(currentAnalysis: Partial<LotsfulTemplate['currentAnalysis']>, projectDesign: Partial<LotsfulTemplate['projectDesign']>): LotsfulTemplate {
     const currentTemplate = this.loadTemplate();
     
+    // 【設計思想準拠】deepMergeによる既存データ保護
     const updates: PartialLotsfulTemplate = {
-      currentAnalysis: { ...currentTemplate.currentAnalysis, ...currentAnalysis },
-      projectDesign: { ...currentTemplate.projectDesign, ...projectDesign },
+      currentAnalysis: this.deepMerge(currentTemplate.currentAnalysis, currentAnalysis),
+      projectDesign: this.deepMerge(currentTemplate.projectDesign, projectDesign),
       metadata: {
         ...currentTemplate.metadata,
         step2Completed: true,
@@ -237,7 +238,7 @@ export class TemplateManager {
     return this.deepMerge(stored, defaultTemplate);
   }
 
-  // プライベート: 深いマージ
+  // プライベート: 段階的蓄積対応の深いマージ
   private static deepMerge(target: any, source: any): any {
     if (source === null || source === undefined) return target;
     if (typeof source !== 'object') return source;
@@ -247,11 +248,35 @@ export class TemplateManager {
     for (const key in source) {
       if (source.hasOwnProperty(key)) {
         if (Array.isArray(source[key])) {
-          result[key] = [...source[key]];
+          // 【段階的蓄積】配列は既存+新規要素を統合（重複削除）
+          const existingArray = Array.isArray(target[key]) ? target[key] : [];
+          const newArray = source[key];
+          const mergedArray = [...existingArray];
+          
+          newArray.forEach(item => {
+            // 文字列の場合は単純な重複チェック
+            if (typeof item === 'string') {
+              if (!mergedArray.includes(item)) {
+                mergedArray.push(item);
+              }
+            } else {
+              // オブジェクトの場合はJSON比較で重複チェック
+              const itemStr = JSON.stringify(item);
+              const exists = mergedArray.some(existing => JSON.stringify(existing) === itemStr);
+              if (!exists) {
+                mergedArray.push(item);
+              }
+            }
+          });
+          
+          result[key] = mergedArray;
         } else if (typeof source[key] === 'object' && source[key] !== null && !Array.isArray(source[key])) {
           result[key] = this.deepMerge(target[key] || {}, source[key]);
         } else {
-          result[key] = source[key];
+          // 基本型は新しい値で上書き（空文字列でない場合のみ）
+          if (source[key] !== '' || target[key] === undefined) {
+            result[key] = source[key];
+          }
         }
       }
     }

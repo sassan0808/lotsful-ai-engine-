@@ -223,7 +223,7 @@ const TemplateEditor = ({ onTemplateUpdate }) => {
         >
           <div className="flex items-center space-x-3">
             <FileText className="h-5 w-5 text-blue-600" />
-            <h3 className="text-lg font-semibold text-gray-900">📝 自由記述・AI自動入力</h3>
+            <h3 className="text-lg font-semibold text-gray-900">📝 課題・プロジェクト情報のAI分析</h3>
             <span className="text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded-full">推奨</span>
           </div>
           {expandedSections.freeText ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
@@ -236,11 +236,12 @@ const TemplateEditor = ({ onTemplateUpdate }) => {
                 <div className="flex items-start space-x-3">
                   <FileText className="h-5 w-5 text-blue-600 mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-blue-900 mb-2">入力例</p>
+                    <p className="text-sm font-medium text-blue-900 mb-2">Step2の責任範囲（現状分析・プロジェクト設計）</p>
                     <div className="text-xs text-blue-700 space-y-1">
                       <p>• 商談議事録：「現在の課題は○○で、3ヶ月以内に△△を達成したい...」</p>
-                      <p>• 追加ヒアリング：「チームは5名で、予算は月50万円程度...」</p>
-                      <p>• 社内会議メモ：「マーケティング強化が急務、外部協力者を検討...」</p>
+                      <p>• 課題詳細：「チームの課題、過去の取り組み、失敗理由など...」</p>
+                      <p>• プロジェクト要件：「予算、期間、成果物、緊急性の理由など...」</p>
+                      <p className="text-red-600">※企業基本情報はStep1で処理済み（重複入力不要）</p>
                     </div>
                   </div>
                 </div>
@@ -255,13 +256,19 @@ const TemplateEditor = ({ onTemplateUpdate }) => {
                   onChange={(e) => setFreeTextInput(e.target.value)}
                   rows="8"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-y"
-                  placeholder="商談議事録、追加ヒアリング内容、社内会議メモなどを入力してください...
+                  placeholder="Step2範囲：現状分析・プロジェクト設計に関する情報を入力してください...
 
-AIが以下の項目を自動抽出・入力します：
-- 現状分析（課題、チーム構成、これまでの取り組み等）
-- プロジェクト設計（目標、スコープ、予算、タイムライン等）
+【現状分析範囲】
+- 課題の詳細と背景
+- これまでの取り組みと失敗理由
+- チーム構成と不足スキル
 
-入力後「AI分析で自動入力」ボタンを押してください。"
+【プロジェクト設計範囲】  
+- 3ヶ月後の理想状態
+- 予算・期間・緊急性の理由
+- 期待する成果物とスコープ
+
+※企業基本情報（企業名・業界・規模等）はStep1で処理済みです"
                 />
                 
                 <div className="mt-4 flex items-center justify-between">
