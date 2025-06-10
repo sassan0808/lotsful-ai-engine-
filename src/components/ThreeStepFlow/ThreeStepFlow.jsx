@@ -19,6 +19,7 @@ const ThreeStepFlow = () => {
   const [analysisResults, setAnalysisResults] = useState(null);
   const [template, setTemplate] = useState(null);
   const [isTemplateFinalAnalyzing, setIsTemplateFinalAnalyzing] = useState(false);
+  const [pendingAnalysisResults, setPendingAnalysisResults] = useState(null);
 
   // 従来の状態（後方互換性のため維持）
   const [companyInfo, setCompanyInfo] = useState({
@@ -219,33 +220,35 @@ const ThreeStepFlow = () => {
     setIsTemplateFinalAnalyzing(false);
   };
 
+  // pendingAnalysisResultsをanalysisResultsに適用するuseEffect
+  useEffect(() => {
+    if (pendingAnalysisResults) {
+      console.log('⚡ useEffect: Applying pending analysis results');
+      setAnalysisResults(pendingAnalysisResults);
+      setPendingAnalysisResults(null);
+      setIsTemplateFinalAnalyzing(false);
+    }
+  }, [pendingAnalysisResults]);
+
   // 分析完了のコールバック（結果受信）
   const handleFinalAnalyze = async (precomputedResults = null) => {
     console.log('🎯 === handleFinalAnalyze CALLED ===');
     console.log('🎯 precomputedResults:', precomputedResults);
-    console.log('🎯 precomputedResults type:', typeof precomputedResults);
-    console.log('🎯 Current state before update:');
-    console.log('   - currentStep:', currentStep);
-    console.log('   - analysisResults:', analysisResults);
-    console.log('   - isTemplateFinalAnalyzing:', isTemplateFinalAnalyzing);
+    console.log('🎯 Validating results structure:', {
+      hasResults: !!precomputedResults,
+      hasTab1: !!precomputedResults?.tab1,
+      hasTab2: !!precomputedResults?.tab2,
+      hasTab3: !!precomputedResults?.tab3
+    });
     
-    if (precomputedResults) {
-      console.log('✅ VALID RESULTS RECEIVED - Processing...');
-      console.log('📊 Setting analysisResults state...');
-      setAnalysisResults(precomputedResults);
-      console.log('🔄 Setting isTemplateFinalAnalyzing to false...');
-      setIsTemplateFinalAnalyzing(false); // 分析完了
-      console.log('🚀 Staying in Step 4, switching to ProposalTabs...');
-      // Step4内でProposalTabsを表示（Step5には進まない）
-      console.log('✅ ALL STATE UPDATES CALLED - Should transition to Step 5');
-      
-      // 状態確認用のタイムアウト
-      setTimeout(() => {
-        console.log('🔍 STATE CHECK AFTER 100ms:');
-        console.log('   - currentStep should be 5:', currentStep);
-        console.log('   - analysisResults should exist:', !!analysisResults);
-      }, 100);
-      
+    if (precomputedResults && (precomputedResults.tab1 || precomputedResults.tab2 || precomputedResults.tab3)) {
+      console.log('✅ VALID RESULTS RECEIVED - Processing via useEffect...');
+      setPendingAnalysisResults(precomputedResults);
+      return;
+    } else {
+      console.error('❌ Invalid or empty analysis results received');
+      alert('分析結果が正しく生成されませんでした。再度お試しください。');
+      setIsTemplateFinalAnalyzing(false);
       return;
     }
     
