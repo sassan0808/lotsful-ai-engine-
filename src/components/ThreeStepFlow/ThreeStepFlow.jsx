@@ -28,7 +28,6 @@ const ThreeStepFlow = () => {
   }, [analysisResults]);
   const [template, setTemplate] = useState(null);
   const [isTemplateFinalAnalyzing, setIsTemplateFinalAnalyzing] = useState(false);
-  const [pendingAnalysisResults, setPendingAnalysisResults] = useState(null);
 
   // 従来の状態（後方互換性のため維持）
   const [companyInfo, setCompanyInfo] = useState({
@@ -199,7 +198,6 @@ const ThreeStepFlow = () => {
       // 5タブ提案書表示中にStep4に戻る場合、分析結果をクリア
       if (analysisResults && currentStep === 4) {
         setAnalysisResults(null);
-        setPendingAnalysisResults(null);
         setIsTemplateFinalAnalyzing(false);
       } else {
         setCurrentStep(currentStep - 1);
@@ -236,119 +234,18 @@ const ThreeStepFlow = () => {
     setIsTemplateFinalAnalyzing(false);
   };
 
-  // pendingAnalysisResultsをanalysisResultsに適用するuseEffect
-  useEffect(() => {
-    console.log('🔍 useEffect triggered - pendingAnalysisResults check:', {
-      exists: !!pendingAnalysisResults,
-      type: typeof pendingAnalysisResults,
-      value: pendingAnalysisResults
-    });
+
+  // 分析完了のコールバック（結果受信）- 簡素化版
+  const handleFinalAnalyze = (analysisResults) => {
+    console.log('🎯 === handleFinalAnalyze CALLED (Simplified) ===');
+    console.log('🎯 Received analysisResults:', analysisResults);
+    console.log('🎯 Setting analysisResults directly...');
     
-    if (pendingAnalysisResults) {
-      console.log('⚡ useEffect: Applying pending analysis results');
-      console.log('📊 pendingAnalysisResults content:', pendingAnalysisResults);
-      console.log('🔧 About to call setAnalysisResults with:', pendingAnalysisResults);
-      setAnalysisResults(pendingAnalysisResults);
-      console.log('🔧 setAnalysisResults called - state should update on next render');
-      setPendingAnalysisResults(null);
-      setIsTemplateFinalAnalyzing(false);
-    }
-  }, [pendingAnalysisResults]);
-
-  // 分析完了のコールバック（結果受信）
-  const handleFinalAnalyze = async (precomputedResults = null) => {
-    console.log('🎯 === handleFinalAnalyze CALLED ===');
-    console.log('🎯 precomputedResults:', precomputedResults);
-    console.log('🎯 Validating results structure:', {
-      hasResults: !!precomputedResults,
-      hasTab1: !!precomputedResults?.tab1,
-      hasTab2: !!precomputedResults?.tab2,
-      hasTab3: !!precomputedResults?.tab3
-    });
+    // シンプルに直接設定
+    setAnalysisResults(analysisResults);
+    setIsTemplateFinalAnalyzing(false);
     
-    if (precomputedResults && (precomputedResults.tab1 || precomputedResults.tab2 || precomputedResults.tab3)) {
-      console.log('✅ VALID RESULTS RECEIVED - Processing directly...');
-      console.log('🔥 Bypassing pendingAnalysisResults, setting analysisResults directly');
-      console.log('🔥 precomputedResults structure check:', {
-        hasTab1: !!precomputedResults.tab1,
-        hasTab2: !!precomputedResults.tab2,
-        hasTab3: !!precomputedResults.tab3,
-        tab1Content: precomputedResults.tab1?.content?.substring(0, 50) + '...',
-        tab2Content: precomputedResults.tab2?.content?.substring(0, 50) + '...',
-        tab3Content: precomputedResults.tab3?.content?.substring(0, 50) + '...'
-      });
-      
-      // useEffectを経由せず、直接設定
-      setAnalysisResults(precomputedResults);
-      setIsTemplateFinalAnalyzing(false);
-      return;
-    } else {
-      console.error('❌ Invalid or empty analysis results received');
-      alert('分析結果が正しく生成されませんでした。再度お試しください。');
-      setIsTemplateFinalAnalyzing(false);
-      return;
-    }
-    
-    console.log('No precomputed results, would perform analysis here');
-    setIsAnalyzing(true);
-
-    // 最新のテンプレートを取得
-    const currentTemplate = TemplateManager.loadTemplate();
-    
-    // デバッグ: テンプレートの中身を確認
-    console.log('=== TEMPLATE DEBUG START ===');
-    console.log('Loaded template from storage:', currentTemplate);
-    console.log('Company Profile:', currentTemplate?.companyProfile);
-    console.log('Research Data:', currentTemplate?.researchData);
-    console.log('Current Analysis:', currentTemplate?.currentAnalysis);
-    console.log('Project Design:', currentTemplate?.projectDesign);
-    console.log('Metadata:', currentTemplate?.metadata);
-    console.log('=== TEMPLATE DEBUG END ===');
-
-    const analysisData = {
-      template: currentTemplate,
-      selectedIndustries,
-      selectedItems: currentTemplate?.metadata?.selectedBusinessItems || selectedBusinessItems,
-      workingHours: currentTemplate?.metadata?.actualWorkingHours || workingHours,
-      talentCount: currentTemplate?.metadata?.talentCount || talentCount
-    };
-
-    try {
-      console.log('Starting final analysis with template data:', analysisData);
-      
-      // 最終統合分析APIを使用
-      const response = await fetch('/api/analyze-final', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(analysisData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Analysis request failed: ${response.status}`);
-      }
-
-      const results = await response.json();
-      console.log('Final analysis results:', results);
-      setAnalysisResults(results);
-    } catch (error) {
-      console.error('Final analysis failed:', error);
-      // フォールバック処理
-      const fallbackData = {
-        companyInfo,
-        challenges,
-        selections: {
-          workingHours,
-          selectedItems: selectedBusinessItems,
-          selectedIndustries
-        }
-      };
-      const fallbackResults = await analyzeWithGemini(fallbackData);
-      setAnalysisResults(fallbackResults);
-    } finally {
-      setIsAnalyzing(false);
-    }
+    console.log('✅ Analysis results set successfully');
   };
 
   const handleReset = () => {
@@ -503,27 +400,13 @@ const ThreeStepFlow = () => {
             })()
           )}
           
-          {currentStep === 4 && (analysisResults || pendingAnalysisResults) && (
+          {currentStep === 4 && analysisResults && (
             (() => {
-              console.log('=== PROPOSAL TABS RENDER CONDITION ===');
+              console.log('=== PROPOSAL TABS RENDER CONDITION (Simplified) ===');
               console.log('currentStep:', currentStep);
-              console.log('analysisResults:', analysisResults);
-              console.log('pendingAnalysisResults:', !!pendingAnalysisResults);
-              
-              // まだpendingの場合はローディング表示
-              if (pendingAnalysisResults && !analysisResults) {
-                return (
-                  <div className="bg-white rounded-lg shadow-sm p-6">
-                    <div className="text-center py-12">
-                      <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary-600 mx-auto mb-4"></div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">5タブ提案書を生成中...</h3>
-                      <p className="text-gray-600">AI分析結果を美しい提案書に変換しています。</p>
-                    </div>
-                  </div>
-                );
-              }
-              
+              console.log('analysisResults exists:', !!analysisResults);
               console.log('Rendering ProposalTabs');
+              
               return (
                 <div className="bg-white rounded-lg shadow-sm">
                   <ProposalTabs 
