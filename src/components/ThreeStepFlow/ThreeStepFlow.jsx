@@ -469,7 +469,7 @@ const ThreeStepFlow = () => {
             </div>
           )}
 
-          {currentStep === 4 && !analysisResults && !pendingAnalysisResults && (
+          {currentStep === 4 && !analysisResults && (
             (() => {
               console.log('=== TEMPLATE INTEGRATION RENDER CONDITION ===');
               console.log('currentStep:', currentStep);
