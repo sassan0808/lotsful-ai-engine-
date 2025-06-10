@@ -351,10 +351,9 @@ const ThreeStepFlow = () => {
       </div>
 
       {/* メインコンテンツエリア */}
-      {!analysisResults && (
-        <div className="bg-white rounded-lg shadow-lg">
-          {/* ステップコンテンツ */}
-          <div className="p-8">
+      <div className="bg-white rounded-lg shadow-lg">
+        {/* ステップコンテンツ */}
+        <div className="p-8">
           {currentStep === 1 && (
             <CompanyInfoInput
               companyInfo={companyInfo}
@@ -400,49 +399,22 @@ const ThreeStepFlow = () => {
             </div>
           )}
 
-          {(() => {
-            console.log('=== RENDER CONDITIONS CHECK ===');
-            console.log('currentStep:', currentStep);
-            console.log('analysisResults:', analysisResults);
-            console.log('typeof analysisResults:', typeof analysisResults);
-            console.log('!!analysisResults:', !!analysisResults);
-            console.log('isTemplateFinalAnalyzing:', isTemplateFinalAnalyzing);
-            
-            if (currentStep === 4 && !analysisResults) {
-              console.log('✅ RENDERING: TemplateIntegration');
-              return (
-                <TemplateIntegration
-                  onTemplateUpdate={handleTemplateUpdate}
-                  onContinueToAnalysis={handleFinalAnalyze}
-                  onAnalysisStart={handleAnalysisStart}
-                  onAnalysisError={handleAnalysisError}
-                  isAnalyzing={isTemplateFinalAnalyzing}
-                />
-              );
-            } else if (currentStep === 4 && analysisResults) {
-              console.log('✅ RENDERING: ProposalTabs');
-              console.log('analysisResults content:', analysisResults);
-              return (
-                <div className="bg-white rounded-lg shadow-sm">
-                  <ProposalTabs 
-                    template={template}
-                    analysisResult={analysisResults}
-                    onExport={() => alert('PDF出力機能は今後実装予定です')}
-                    onShare={() => alert('共有機能は今後実装予定です')}
-                  />
-                </div>
-              );
-            } else {
-              console.log('❌ NO RENDERING: conditions not met');
-              return null;
-            }
-          })()}
+          {currentStep === 4 && (
+            <TemplateIntegration
+              onTemplateUpdate={handleTemplateUpdate}
+              onContinueToAnalysis={handleFinalAnalyze}
+              onAnalysisStart={handleAnalysisStart}
+              onAnalysisError={handleAnalysisError}
+              isAnalyzing={isTemplateFinalAnalyzing}
+            />
+          )}
         </div>
 
         {/* ナビゲーションボタン */}
-        <div className="flex items-center justify-between p-8 bg-gray-50 rounded-b-lg">
-          <div>
-            {currentStep > 1 && !analysisResults && (
+        {!analysisResults && (
+          <div className="flex items-center justify-between p-8 bg-gray-50 rounded-b-lg">
+            <div>
+              {currentStep > 1 && (
               <button
                 onClick={handlePrevious}
                 className="flex items-center space-x-2 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
@@ -500,9 +472,27 @@ const ThreeStepFlow = () => {
                 <ArrowRight className="h-5 w-5" />
               </button>
             ) : null}
+            </div>
           </div>
-        </div>
+        )}
       </div>
+      
+      {/* ProposalTabs表示エリア */}
+      {analysisResults && (
+        <div className="bg-white rounded-lg shadow-lg mt-6">
+          {(() => {
+            console.log('✅ RENDERING: ProposalTabs');
+            console.log('analysisResults content:', analysisResults);
+            return (
+              <ProposalTabs 
+                template={template}
+                analysisResult={analysisResults}
+                onExport={() => alert('PDF出力機能は今後実装予定です')}
+                onShare={() => alert('共有機能は今後実装予定です')}
+              />
+            );
+          })()}
+        </div>
       )}
       
       {/* 5タブ提案書完成時のナビゲーション */}
