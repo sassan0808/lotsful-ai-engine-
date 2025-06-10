@@ -187,14 +187,28 @@ const ThreeStepFlow = () => {
 
   const handlePrevious = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+      // 5タブ提案書表示中にStep4に戻る場合、分析結果をクリア
+      if (analysisResults && currentStep === 4) {
+        setAnalysisResults(null);
+        setPendingAnalysisResults(null);
+        setIsTemplateFinalAnalyzing(false);
+      } else {
+        setCurrentStep(currentStep - 1);
+      }
     }
   };
 
   // Step3完了時の処理（業務選択のみ）
   const handleStep3Complete = () => {
+    console.log('=== STEP3 COMPLETE DEBUG ===');
+    console.log('selectedBusinessItems:', selectedBusinessItems);
+    console.log('selectedBusinessItems length:', selectedBusinessItems.length);
+    console.log('workingHours:', workingHours);
+    console.log('talentCount:', talentCount);
+    
     // 最新のテンプレートを取得
     const currentTemplate = TemplateManager.loadTemplate();
+    console.log('Current template before Step3 update:', currentTemplate);
     
     // 選択された業務項目をテンプレートに保存
     const updatedTemplate = TemplateManager.updateStep3(currentTemplate, {
@@ -202,6 +216,10 @@ const ThreeStepFlow = () => {
       workingHours,
       talentCount
     });
+    console.log('Updated template after Step3 update:', updatedTemplate);
+    console.log('selectedBusinessItems in updated template:', updatedTemplate.metadata?.selectedBusinessItems);
+    console.log('=== STEP3 COMPLETE DEBUG END ===');
+    
     setTemplate(updatedTemplate);
     
     // Step4に進む
@@ -503,7 +521,7 @@ const ThreeStepFlow = () => {
         {/* ナビゲーションボタン */}
         <div className="flex items-center justify-between p-8 bg-gray-50 rounded-b-lg">
           <div>
-            {currentStep > 1 && (
+            {currentStep > 1 && !analysisResults && (
               <button
                 onClick={handlePrevious}
                 className="flex items-center space-x-2 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
@@ -533,8 +551,11 @@ const ThreeStepFlow = () => {
                   人数: {talentCount}名
                 </span>
               )}
-              {currentStep === 4 && (
+              {currentStep === 4 && !analysisResults && (
                 <span>データ統合・確認画面</span>
+              )}
+              {currentStep === 4 && analysisResults && (
+                <span>5タブ提案書完成</span>
               )}
             </div>
 
@@ -561,6 +582,34 @@ const ThreeStepFlow = () => {
           </div>
         </div>
       </div>
+      )}
+      
+      {/* 5タブ提案書完成時のナビゲーション */}
+      {analysisResults && (
+        <div className="bg-white rounded-lg shadow-lg mt-6">
+          <div className="flex items-center justify-between p-8 bg-gray-50 rounded-lg">
+            <div>
+              <button
+                onClick={handlePrevious}
+                className="flex items-center space-x-2 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                <ArrowLeft className="h-5 w-5" />
+                <span>データ確認に戻る</span>
+              </button>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-600">
+                <span>5タブ提案書が完成しました</span>
+              </div>
+              <button
+                onClick={handleReset}
+                className="flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+              >
+                <span>新しい分析を開始</span>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Step3完了メッセージ */}

@@ -680,7 +680,15 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis, onAnalysi
         <SectionHeader title="選択業務項目" sectionId="business" icon={CheckCircle} />
         {expandedSections.has('business') && (
           <div className="p-6 space-y-4">
-            {template.metadata?.selectedBusinessItems?.length > 0 ? (
+            {(() => {
+              console.log('=== BUSINESS ITEMS DEBUG ===');
+              console.log('template.metadata:', template.metadata);
+              console.log('selectedBusinessItems:', template.metadata?.selectedBusinessItems);
+              console.log('selectedBusinessItems length:', template.metadata?.selectedBusinessItems?.length);
+              console.log('condition result:', template.metadata?.selectedBusinessItems?.length > 0);
+              console.log('=== BUSINESS ITEMS DEBUG END ===');
+              return template.metadata?.selectedBusinessItems?.length > 0;
+            })() ? (
               <div>
                 <div className="mb-4 p-4 bg-blue-50 rounded-lg">
                   <div className="flex items-center justify-between">
