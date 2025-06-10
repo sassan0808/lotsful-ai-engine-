@@ -229,8 +229,15 @@ const ThreeStepFlow = () => {
 
   // pendingAnalysisResultsをanalysisResultsに適用するuseEffect
   useEffect(() => {
+    console.log('🔍 useEffect triggered - pendingAnalysisResults check:', {
+      exists: !!pendingAnalysisResults,
+      type: typeof pendingAnalysisResults,
+      value: pendingAnalysisResults
+    });
+    
     if (pendingAnalysisResults) {
       console.log('⚡ useEffect: Applying pending analysis results');
+      console.log('📊 pendingAnalysisResults content:', pendingAnalysisResults);
       setAnalysisResults(pendingAnalysisResults);
       setPendingAnalysisResults(null);
       setIsTemplateFinalAnalyzing(false);
@@ -250,6 +257,15 @@ const ThreeStepFlow = () => {
     
     if (precomputedResults && (precomputedResults.tab1 || precomputedResults.tab2 || precomputedResults.tab3)) {
       console.log('✅ VALID RESULTS RECEIVED - Processing via useEffect...');
+      console.log('🔥 About to call setPendingAnalysisResults with:', precomputedResults);
+      console.log('🔥 precomputedResults structure check:', {
+        hasTab1: !!precomputedResults.tab1,
+        hasTab2: !!precomputedResults.tab2,
+        hasTab3: !!precomputedResults.tab3,
+        tab1Content: precomputedResults.tab1?.content?.substring(0, 50) + '...',
+        tab2Content: precomputedResults.tab2?.content?.substring(0, 50) + '...',
+        tab3Content: precomputedResults.tab3?.content?.substring(0, 50) + '...'
+      });
       setPendingAnalysisResults(precomputedResults);
       return;
     } else {

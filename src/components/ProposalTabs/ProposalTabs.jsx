@@ -288,7 +288,7 @@ const ProjectDesignTab = ({ template, analysisResult }) => {
       <div className="bg-blue-50 rounded-lg p-4">
         <h4 className="font-semibold text-blue-900 mb-2">ミッション</h4>
         <p className="text-blue-800">
-          {project.idealState3Months || 'プロジェクトで実現すること'}
+          {projectTemplate.idealState3Months || 'プロジェクトで実現すること'}
         </p>
       </div>
 
@@ -299,7 +299,7 @@ const ProjectDesignTab = ({ template, analysisResult }) => {
           <div>
             <h5 className="font-medium text-green-700 mb-2">含むもの</h5>
             <ul className="space-y-1">
-              {(project.scope?.included || []).map((item, idx) => (
+              {(projectTemplate.scope?.included || []).map((item, idx) => (
                 <li key={idx} className="flex items-start space-x-2">
                   <span className="text-green-600">✓</span>
                   <span className="text-sm text-gray-700">{item}</span>
@@ -310,7 +310,7 @@ const ProjectDesignTab = ({ template, analysisResult }) => {
           <div>
             <h5 className="font-medium text-red-700 mb-2">含まないもの</h5>
             <ul className="space-y-1">
-              {(project.scope?.excluded || []).map((item, idx) => (
+              {(projectTemplate.scope?.excluded || []).map((item, idx) => (
                 <li key={idx} className="flex items-start space-x-2">
                   <span className="text-red-600">✗</span>
                   <span className="text-sm text-gray-700">{item}</span>
@@ -324,7 +324,7 @@ const ProjectDesignTab = ({ template, analysisResult }) => {
       {/* フェーズ設計 */}
       <div>
         <h4 className="font-semibold text-gray-800 mb-3">フェーズ設計</h4>
-        {(project.phases || []).map((phase, idx) => (
+        {(projectTemplate.phases || []).map((phase, idx) => (
           <div key={idx} className="mb-6 border border-gray-200 rounded-lg p-4">
             <h5 className="font-medium text-gray-800 mb-2">
               Phase {idx + 1}: {phase.name}（{phase.period}）
@@ -343,7 +343,7 @@ const ProjectDesignTab = ({ template, analysisResult }) => {
               <div>
                 <h6 className="font-medium text-gray-700 mb-2">成果物</h6>
                 <ul className="space-y-1">
-                  {(project.deliverables || []).slice(idx * 2, idx * 2 + 2).map((deliverable, didx) => (
+                  {(projectTemplate.deliverables || []).slice(idx * 2, idx * 2 + 2).map((deliverable, didx) => (
                     <li key={didx} className="text-sm text-gray-600">📄 {deliverable}</li>
                   ))}
                 </ul>
