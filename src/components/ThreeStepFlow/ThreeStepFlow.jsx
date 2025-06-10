@@ -17,6 +17,15 @@ const ThreeStepFlow = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResults, setAnalysisResults] = useState(null);
+  
+  // analysisResults変更時のデバッグログ
+  useEffect(() => {
+    console.log('🎯 analysisResults state changed:', {
+      hasResults: !!analysisResults,
+      type: typeof analysisResults,
+      value: analysisResults
+    });
+  }, [analysisResults]);
   const [template, setTemplate] = useState(null);
   const [isTemplateFinalAnalyzing, setIsTemplateFinalAnalyzing] = useState(false);
   const [pendingAnalysisResults, setPendingAnalysisResults] = useState(null);
@@ -238,7 +247,9 @@ const ThreeStepFlow = () => {
     if (pendingAnalysisResults) {
       console.log('⚡ useEffect: Applying pending analysis results');
       console.log('📊 pendingAnalysisResults content:', pendingAnalysisResults);
+      console.log('🔧 About to call setAnalysisResults with:', pendingAnalysisResults);
       setAnalysisResults(pendingAnalysisResults);
+      console.log('🔧 setAnalysisResults called - state should update on next render');
       setPendingAnalysisResults(null);
       setIsTemplateFinalAnalyzing(false);
     }
