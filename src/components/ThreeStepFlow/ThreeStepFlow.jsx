@@ -445,7 +445,7 @@ const ThreeStepFlow = () => {
             </div>
           )}
 
-          {currentStep === 4 && !analysisResults && (
+          {currentStep === 4 && !analysisResults && !pendingAnalysisResults && (
             (() => {
               console.log('=== TEMPLATE INTEGRATION RENDER CONDITION ===');
               console.log('currentStep:', currentStep);
@@ -465,14 +465,27 @@ const ThreeStepFlow = () => {
             })()
           )}
           
-          {currentStep === 4 && analysisResults && (
+          {currentStep === 4 && (analysisResults || pendingAnalysisResults) && (
             (() => {
-              console.log('=== PROPOSAL TABS RENDER CONDITION (STEP 5) ===');
+              console.log('=== PROPOSAL TABS RENDER CONDITION ===');
               console.log('currentStep:', currentStep);
               console.log('analysisResults:', analysisResults);
-              console.log('!!analysisResults:', !!analysisResults);
-              console.log('Rendering ProposalTabs in Step 5');
-              console.log('=== END PROPOSAL TABS RENDER CONDITION ===');
+              console.log('pendingAnalysisResults:', !!pendingAnalysisResults);
+              
+              // まだpendingの場合はローディング表示
+              if (pendingAnalysisResults && !analysisResults) {
+                return (
+                  <div className="bg-white rounded-lg shadow-sm p-6">
+                    <div className="text-center py-12">
+                      <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary-600 mx-auto mb-4"></div>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">5タブ提案書を生成中...</h3>
+                      <p className="text-gray-600">AI分析結果を美しい提案書に変換しています。</p>
+                    </div>
+                  </div>
+                );
+              }
+              
+              console.log('Rendering ProposalTabs');
               return (
                 <div className="bg-white rounded-lg shadow-sm">
                   <ProposalTabs 

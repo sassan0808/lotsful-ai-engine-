@@ -217,14 +217,47 @@ function extractRevenue(text) {
 }
 
 function generateMockStep1Analysis(researchText) {
+  // 基本的な企業情報抽出を試行
+  let companyName = '情報不足により特定不可';
+  let industries = [];
+  
+  if (researchText) {
+    // 企業名を簡易抽出
+    const companyMatches = researchText.match(/株式会社[^\s\n。、]+|[^\s\n。、]+株式会社|合同会社[^\s\n。、]+|[^\s\n。、]+合同会社/);
+    if (companyMatches) {
+      companyName = companyMatches[0];
+    }
+    
+    // 業界を簡易抽出
+    const industryKeywords = {
+      'IT・テクノロジー': ['IT', 'テック', 'ソフトウェア', 'システム', 'AI', 'DX'],
+      'EC・Eコマース': ['EC', 'Eコマース', 'オンライン', '通販'],
+      'コンサルティング': ['コンサル', 'アドバイザリー', '支援'],
+      '人材・HR': ['人材', '採用', 'HR', '人事'],
+      'マーケティング': ['マーケティング', '広告', 'PR'],
+      'SaaS': ['SaaS', 'クラウド']
+    };
+    
+    const lowerText = researchText.toLowerCase();
+    Object.entries(industryKeywords).forEach(([industry, keywords]) => {
+      if (keywords.some(keyword => lowerText.includes(keyword.toLowerCase()))) {
+        industries.push(industry);
+      }
+    });
+    
+    if (industries.length === 0) {
+      industries = ['その他'];
+    }
+  }
+
   return {
     companyProfile: {
-      name: '情報不足により特定不可',
-      industry: [],
-      employeeCount: '',
-      revenue: '',
+      name: companyName,
+      industry: industries,
+      employeeCount: '情報不足により特定不可',
+      revenue: '情報不足により特定不可',
       headquarters: '情報不足により特定不可',
-      businessDescription: '情報不足により特定不可',
+      businessDescription: researchText ? researchText.substring(0, 200) + '...' : '情報不足により特定不可',
       mainCustomers: '情報不足により特定不可',
     },
     researchData: {

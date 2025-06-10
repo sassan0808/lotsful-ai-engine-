@@ -732,9 +732,14 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis, onAnalysi
             <p className="text-primary-700 text-sm">
               分析精度スコア: {qualityScore}/100 
               {qualityScore >= 70 ? ' - 高精度分析が可能です' : 
-               qualityScore >= 50 ? ' - 分析実行可能（推奨項目の入力で精度向上）' : 
+               qualityScore >= 30 ? ' - 分析実行可能（推奨項目の入力で精度向上）' : 
                ' - 重要項目の入力で分析精度が大幅に向上します'}
             </p>
+            {!template?.metadata?.step1Completed && (
+              <p className="text-red-600 text-sm mt-1">
+                ⚠️ Step1で「AI分析実行」を完了してから最終分析を実行してください
+              </p>
+            )}
           </div>
           <div className="flex items-center space-x-4">
             <button 
@@ -746,7 +751,7 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis, onAnalysi
             </button>
             <button
               onClick={handleDirectAnalysis}
-              disabled={qualityScore < 50 || isAnalyzing}
+              disabled={qualityScore < 30 || isAnalyzing || !template?.metadata?.step1Completed}
               className="flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {isAnalyzing ? (

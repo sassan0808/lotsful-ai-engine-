@@ -41,10 +41,13 @@ const CompanyInfoInput = ({ companyInfo, onCompanyInfoChange }) => {
       const extractedForDisplay = {
         companyName: analysisResult.companyProfile.name,
         industries: analysisResult.companyProfile.industry,
-        companySize: analysisResult.companyProfile.employeeCount || '規模不明',
+        employeeCount: analysisResult.companyProfile.employeeCount || '規模不明',
+        revenue: analysisResult.companyProfile.revenue || '情報不足により特定不可',
+        headquarters: analysisResult.companyProfile.headquarters || '情報不足により特定不可',
         businessDescription: analysisResult.companyProfile.businessDescription,
         organizationFeatures: analysisResult.researchData.organizationCulture,
-        mainChallenges: [analysisResult.researchData.hypothesisInsights],
+        recentNews: analysisResult.researchData.recentNews,
+        insights: analysisResult.researchData.hypothesisInsights,
         confidence: analysisResult.metadata.isMockData ? 30 : 85,
         growthStage: '情報不足により特定不可'
       };
