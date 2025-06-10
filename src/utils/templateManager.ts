@@ -233,7 +233,8 @@ export class TemplateManager {
   // プライベート: デフォルト値とマージ（後方互換性）
   private static mergeWithDefaults(stored: any): LotsfulTemplate {
     const defaultTemplate = createEmptyTemplate();
-    return this.deepMerge(defaultTemplate, stored);
+    // 保存されたデータを優先し、足りない部分をデフォルト値で補完
+    return this.deepMerge(stored, defaultTemplate);
   }
 
   // プライベート: 深いマージ

@@ -19,7 +19,8 @@ export async function POST(request) {
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
     
     if (!GEMINI_API_KEY) {
-      console.warn('GEMINI_API_KEY not found, using mock data');
+      console.warn('GEMINI_API_KEY not found, using enhanced mock data');
+      // 環境変数がない場合でも、基本的な解析を実行
       return NextResponse.json(generateMockStep1Analysis(researchText));
     }
 
@@ -230,17 +231,17 @@ function generateMockStep1Analysis(researchText) {
     
     // 業界を簡易抽出
     const industryKeywords = {
-      'IT・テクノロジー': ['IT', 'テック', 'ソフトウェア', 'システム', 'AI', 'DX'],
+      'IT・テクノロジー': ['IT', 'テック', 'ソフトウェア', 'システム', 'AI', 'DX', 'イノベーション', '技術'],
       'EC・Eコマース': ['EC', 'Eコマース', 'オンライン', '通販'],
       'コンサルティング': ['コンサル', 'アドバイザリー', '支援'],
-      '人材・HR': ['人材', '採用', 'HR', '人事'],
+      '人材・HR': ['人材', '採用', 'HR', '人事', 'はたらく'],
       'マーケティング': ['マーケティング', '広告', 'PR'],
-      'SaaS': ['SaaS', 'クラウド']
+      'SaaS': ['SaaS', 'クラウド', 'サービス'],
+      '新規事業開発': ['新規事業', 'ベンチャー', 'スタートアップ', '事業創出']
     };
     
-    const lowerText = researchText.toLowerCase();
     Object.entries(industryKeywords).forEach(([industry, keywords]) => {
-      if (keywords.some(keyword => lowerText.includes(keyword.toLowerCase()))) {
+      if (keywords.some(keyword => researchText.includes(keyword))) {
         industries.push(industry);
       }
     });
