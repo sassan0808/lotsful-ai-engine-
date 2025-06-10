@@ -260,15 +260,25 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis, onAnalysi
       }
 
       const results = await response.json();
-      console.log('Direct analysis results:', results);
+      console.log('✅ Direct analysis API SUCCESS!');
+      console.log('📊 Analysis results received:', results);
+      console.log('📊 Results structure check:', {
+        hasTab1: !!results?.tab1,
+        hasTab2: !!results?.tab2,
+        hasTab3: !!results?.tab3,
+        tab1Content: results?.tab1?.content?.substring(0, 100) + '...',
+        tab2Content: results?.tab2?.content?.substring(0, 100) + '...',
+        tab3Content: results?.tab3?.content?.substring(0, 100) + '...'
+      });
       
       // 結果をThreeStepFlowのstateに設定する必要がある
       // でも、TemplateIntegrationはThreeStepFlowのsetAnalysisResultsにアクセスできない
       // なので、分析結果を含めてhandleFinalAnalyzeを呼び出す
       if (onContinueToAnalysis) {
-        console.log('=== PASSING RESULTS TO PARENT ===');
-        console.log('Calling onContinueToAnalysis with results:', results);
+        console.log('🚀 CALLING onContinueToAnalysis...');
+        console.log('🚀 Callback function type:', typeof onContinueToAnalysis);
         onContinueToAnalysis(results);
+        console.log('✅ onContinueToAnalysis CALLED SUCCESSFULLY');
       } else {
         console.error('❌ onContinueToAnalysis callback not provided!');
         alert('分析結果を表示する機能が正しく設定されていません。');

@@ -153,12 +153,6 @@ const ThreeStepFlow = () => {
       description: 'テンプレートデータ統合・最終確認',
       required: true
     },
-    { 
-      id: 5, 
-      title: '提案書生成', 
-      description: 'AI分析結果・5タブ提案書',
-      required: false
-    }
   ];
 
   const canProceedToStep = (step) => {
@@ -227,16 +221,31 @@ const ThreeStepFlow = () => {
 
   // 分析完了のコールバック（結果受信）
   const handleFinalAnalyze = async (precomputedResults = null) => {
-    console.log('=== handleFinalAnalyze CALLED ===');
-    console.log('precomputedResults:', precomputedResults);
-    console.log('precomputedResults type:', typeof precomputedResults);
+    console.log('🎯 === handleFinalAnalyze CALLED ===');
+    console.log('🎯 precomputedResults:', precomputedResults);
+    console.log('🎯 precomputedResults type:', typeof precomputedResults);
+    console.log('🎯 Current state before update:');
+    console.log('   - currentStep:', currentStep);
+    console.log('   - analysisResults:', analysisResults);
+    console.log('   - isTemplateFinalAnalyzing:', isTemplateFinalAnalyzing);
     
     if (precomputedResults) {
-      console.log('✅ Received precomputed results, setting state...');
+      console.log('✅ VALID RESULTS RECEIVED - Processing...');
+      console.log('📊 Setting analysisResults state...');
       setAnalysisResults(precomputedResults);
+      console.log('🔄 Setting isTemplateFinalAnalyzing to false...');
       setIsTemplateFinalAnalyzing(false); // 分析完了
-      setCurrentStep(5); // Step5（提案書表示）に進む
-      console.log('✅ Analysis completed, moving to Step 5');
+      console.log('🚀 Staying in Step 4, switching to ProposalTabs...');
+      // Step4内でProposalTabsを表示（Step5には進まない）
+      console.log('✅ ALL STATE UPDATES CALLED - Should transition to Step 5');
+      
+      // 状態確認用のタイムアウト
+      setTimeout(() => {
+        console.log('🔍 STATE CHECK AFTER 100ms:');
+        console.log('   - currentStep should be 5:', currentStep);
+        console.log('   - analysisResults should exist:', !!analysisResults);
+      }, 100);
+      
       return;
     }
     
@@ -453,7 +462,7 @@ const ThreeStepFlow = () => {
             })()
           )}
           
-          {currentStep === 5 && analysisResults && (
+          {currentStep === 4 && analysisResults && (
             (() => {
               console.log('=== PROPOSAL TABS RENDER CONDITION (STEP 5) ===');
               console.log('currentStep:', currentStep);
@@ -478,25 +487,13 @@ const ThreeStepFlow = () => {
         {/* ナビゲーションボタン */}
         <div className="flex items-center justify-between p-8 bg-gray-50 rounded-b-lg">
           <div>
-            {currentStep > 1 && currentStep !== 5 && (
+            {currentStep > 1 && (
               <button
                 onClick={handlePrevious}
                 className="flex items-center space-x-2 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />
                 <span>前へ</span>
-              </button>
-            )}
-            {currentStep === 5 && (
-              <button
-                onClick={() => {
-                  setCurrentStep(4);
-                  setAnalysisResults(null); // 分析結果をクリアしてStep4に戻る
-                }}
-                className="flex items-center space-x-2 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-              >
-                <ArrowLeft className="h-5 w-5" />
-                <span>データ確認に戻る</span>
               </button>
             )}
           </div>
@@ -522,9 +519,6 @@ const ThreeStepFlow = () => {
               )}
               {currentStep === 4 && (
                 <span>データ統合・確認画面</span>
-              )}
-              {currentStep === 5 && (
-                <span>5タブ提案書生成完了</span>
               )}
             </div>
 
