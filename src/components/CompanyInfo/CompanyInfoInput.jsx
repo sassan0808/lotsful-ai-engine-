@@ -3,14 +3,13 @@
 import React, { useState } from 'react';
 import { Building2, FileText, Sparkles, AlertCircle, CheckCircle, Loader2, Eye } from 'lucide-react';
 
-const CompanyInfoInput = ({ companyInfo, onCompanyInfoChange }) => {
+const CompanyInfoInput = ({ companyInfo, onCompanyInfoChange, template }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [extractedInfo, setExtractedInfo] = useState(null);
 
   const handleTextChange = (value) => {
     onCompanyInfoChange({
       rawText: value,
-      extracted: extractedInfo
+      extracted: template // テンプレート情報を保持
     });
   };
 
@@ -37,37 +36,15 @@ const CompanyInfoInput = ({ companyInfo, onCompanyInfoChange }) => {
 
       const analysisResult = await response.json();
       
-      // テンプレート形式に変換して表示用データを作成
-      const extractedForDisplay = {
-        companyName: analysisResult.companyProfile.name,
-        industries: analysisResult.companyProfile.industry,
-        employeeCount: analysisResult.companyProfile.employeeCount || '規模不明',
-        revenue: analysisResult.companyProfile.revenue || '情報不足により特定不可',
-        headquarters: analysisResult.companyProfile.headquarters || '情報不足により特定不可',
-        businessDescription: analysisResult.companyProfile.businessDescription,
-        organizationFeatures: analysisResult.researchData.organizationCulture,
-        recentNews: analysisResult.researchData.recentNews,
-        insights: analysisResult.researchData.hypothesisInsights,
-        confidence: analysisResult.metadata.isMockData ? 30 : 85,
-        growthStage: '情報不足により特定不可'
-      };
-      
-      setExtractedInfo(extractedForDisplay);
-      
-      // テンプレート形式で上位コンポーネントに通知
+      // テンプレート形式で上位コンポーネントに通知（テンプレート更新を促す）
       onCompanyInfoChange({
         rawText: companyInfo.rawText,
         extracted: analysisResult // 完全なテンプレート構造
       });
     } catch (error) {
       console.error('Step1 analysis error:', error);
-      // フォールバック: 簡易抽出
-      const extracted = extractCompanyInfo(companyInfo.rawText);
-      setExtractedInfo(extracted);
-      onCompanyInfoChange({
-        rawText: companyInfo.rawText,
-        extracted: null // エラー時は null
-      });
+      alert('AI分析に失敗しました。再度お試しください。');
+      // エラー時はテンプレート更新を行わない
     } finally {
       setIsAnalyzing(false);
     }
@@ -278,12 +255,12 @@ const CompanyInfoInput = ({ companyInfo, onCompanyInfoChange }) => {
         </div>
       </div>
 
-      {/* AI抽出結果 */}
-      {extractedInfo && (
+      {/* テンプレート情報表示（Step1 AI分析完了後） */}
+      {template?.metadata?.step1Completed && (
         <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="flex items-center space-x-2 mb-4">
             <Sparkles className="h-5 w-5 text-primary-600" />
-            <h3 className="text-lg font-semibold text-gray-900">AI抽出結果</h3>
+            <h3 className="text-lg font-semibold text-gray-900">テンプレート情報（Step1完了）</h3>
           </div>
           
           <div className="space-y-6">
@@ -296,19 +273,19 @@ const CompanyInfoInput = ({ companyInfo, onCompanyInfoChange }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-blue-700">企業名</label>
-                  <p className="text-sm text-blue-900">{extractedInfo.companyName}</p>
+                  <p className="text-sm text-blue-900">{template.companyProfile?.name || '情報不足により特定不可'}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-blue-700">従業員数</label>
-                  <p className="text-sm text-blue-900">{extractedInfo.employeeCount || '情報不足により特定不可'}</p>
+                  <p className="text-sm text-blue-900">{template.companyProfile?.employeeCount || '情報不足により特定不可'}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-blue-700">年商</label>
-                  <p className="text-sm text-blue-900">{extractedInfo.revenue || '情報不足により特定不可'}</p>
+                  <p className="text-sm text-blue-900">{template.companyProfile?.revenue || '情報不足により特定不可'}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-blue-700">本社所在地</label>
-                  <p className="text-sm text-blue-900">{extractedInfo.headquarters || '情報不足により特定不可'}</p>
+                  <p className="text-sm text-blue-900">{template.companyProfile?.headquarters || '情報不足により特定不可'}</p>
                 </div>
               </div>
               
@@ -318,13 +295,13 @@ const CompanyInfoInput = ({ companyInfo, onCompanyInfoChange }) => {
                   業界 <span className="text-primary-600 text-xs">(Step3に自動連携)</span>
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {(extractedInfo.industries || []).map((industry, index) => (
+                  {(template.companyProfile?.industry || []).map((industry, index) => (
                     <span key={index} className="px-3 py-1 bg-primary-100 text-primary-700 text-sm rounded-full border border-primary-200">
                       <CheckCircle className="h-3 w-3 inline mr-1" />
                       {industry}
                     </span>
                   ))}
-                  {(!extractedInfo.industries || extractedInfo.industries.length === 0) && (
+                  {(!template.companyProfile?.industry || template.companyProfile.industry.length === 0) && (
                     <span className="text-sm text-gray-500">業界を特定できませんでした</span>
                   )}
                 </div>
@@ -333,7 +310,7 @@ const CompanyInfoInput = ({ companyInfo, onCompanyInfoChange }) => {
               {/* 事業内容 */}
               <div className="mt-4">
                 <label className="block text-sm font-medium text-blue-700">事業内容</label>
-                <p className="text-sm text-blue-900 bg-white p-3 rounded border border-blue-200">{extractedInfo.businessDescription}</p>
+                <p className="text-sm text-blue-900 bg-white p-3 rounded border border-blue-200">{template.companyProfile?.businessDescription || '情報不足により特定不可'}</p>
               </div>
             </div>
 
@@ -347,19 +324,19 @@ const CompanyInfoInput = ({ companyInfo, onCompanyInfoChange }) => {
               {/* 組織特徴 */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-green-700">組織文化・特徴</label>
-                <p className="text-sm text-green-900 bg-white p-3 rounded border border-green-200">{extractedInfo.organizationFeatures}</p>
+                <p className="text-sm text-green-900 bg-white p-3 rounded border border-green-200">{template.researchData?.organizationCulture || '情報不足により特定不可'}</p>
               </div>
 
               {/* 最近の動き */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-green-700">最近の動き・ニュース</label>
-                <p className="text-sm text-green-900 bg-white p-3 rounded border border-green-200">{extractedInfo.recentNews || '情報不足により特定不可'}</p>
+                <p className="text-sm text-green-900 bg-white p-3 rounded border border-green-200">{template.researchData?.recentNews || '情報不足により特定不可'}</p>
               </div>
 
               {/* 仮説・洞察 */}
               <div>
                 <label className="block text-sm font-medium text-green-700">仮説・洞察</label>
-                <p className="text-sm text-green-900 bg-white p-3 rounded border border-green-200">{extractedInfo.insights || '情報不足により特定不可'}</p>
+                <p className="text-sm text-green-900 bg-white p-3 rounded border border-green-200">{template.researchData?.hypothesisInsights || '情報不足により特定不可'}</p>
               </div>
             </div>
           </div>
@@ -369,7 +346,7 @@ const CompanyInfoInput = ({ companyInfo, onCompanyInfoChange }) => {
             <div className="flex items-start space-x-2">
               <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5" />
               <p className="text-sm text-yellow-800">
-                AI抽出結果は参考情報です。次のステップで詳細な課題や要望を入力することで、より精度の高い分析が可能になります。
+                テンプレート情報が正常に保存されました。Step2で詳細情報を追加し、Step3で業務項目を選択してください。
               </p>
             </div>
           </div>

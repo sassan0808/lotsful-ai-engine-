@@ -200,15 +200,8 @@ const ThreeStepFlow = () => {
 
   // Step3完了時の処理（業務選択のみ）
   const handleStep3Complete = () => {
-    console.log('=== STEP3 COMPLETE DEBUG ===');
-    console.log('selectedBusinessItems:', selectedBusinessItems);
-    console.log('selectedBusinessItems length:', selectedBusinessItems.length);
-    console.log('workingHours:', workingHours);
-    console.log('talentCount:', talentCount);
-    
     // 最新のテンプレートを取得
     const currentTemplate = TemplateManager.loadTemplate();
-    console.log('Current template before Step3 update:', currentTemplate);
     
     // 選択された業務項目をテンプレートに保存
     const updatedTemplate = TemplateManager.updateStep3(currentTemplate, {
@@ -216,10 +209,6 @@ const ThreeStepFlow = () => {
       workingHours,
       talentCount
     });
-    console.log('Updated template after Step3 update:', updatedTemplate);
-    console.log('selectedBusinessItems in updated template:', updatedTemplate.metadata?.selectedBusinessItems);
-    console.log('=== STEP3 COMPLETE DEBUG END ===');
-    
     setTemplate(updatedTemplate);
     
     // Step4に進む
@@ -423,6 +412,7 @@ const ThreeStepFlow = () => {
             <CompanyInfoInput
               companyInfo={companyInfo}
               onCompanyInfoChange={handleCompanyInfoChange}
+              template={template}
             />
           )}
 
