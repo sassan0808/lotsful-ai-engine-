@@ -236,22 +236,28 @@ const ThreeStepFlow = () => {
   };
 
 
-  // 分析完了のコールバック（結果受信）- 簡素化版
+  // 分析完了のコールバック（結果受信）- 確実動作版
   const handleFinalAnalyze = (analysisResults) => {
-    console.log('🎯 === handleFinalAnalyze CALLED (Simplified) ===');
+    console.log('🎯 === handleFinalAnalyze CALLED ===');
     console.log('🎯 Received analysisResults:', analysisResults);
-    console.log('🎯 Setting analysisResults directly...');
+    console.log('🎯 Current analysisResults before set:', analysisResults);
     
-    // React 18の自動バッチングを回避してすぐに更新
-    flushSync(() => {
-      setIsTemplateFinalAnalyzing(false);
+    // まず分析状態をクリア
+    setIsTemplateFinalAnalyzing(false);
+    
+    // 確実に状態を更新するために、関数型更新を使用
+    setAnalysisResults(prev => {
+      console.log('🔄 setAnalysisResults function called. prev:', prev);
+      console.log('🔄 setting new value:', analysisResults);
+      return analysisResults;
     });
     
-    flushSync(() => {
-      setAnalysisResults(analysisResults);
-    });
+    console.log('✅ setAnalysisResults called');
     
-    console.log('✅ Analysis results set with flushSync');
+    // 強制的に再レンダリングを促すため
+    setTimeout(() => {
+      console.log('⏰ Timeout check - current analysisResults should be set');
+    }, 100);
   };
 
   const handleReset = () => {
@@ -394,14 +400,16 @@ const ThreeStepFlow = () => {
             </div>
           )}
 
-          {currentStep === 4 && !analysisResults && (
-            (() => {
-              console.log('=== TEMPLATE INTEGRATION RENDER CONDITION ===');
-              console.log('currentStep:', currentStep);
-              console.log('analysisResults:', analysisResults);
-              console.log('!analysisResults:', !analysisResults);
-              console.log('Rendering TemplateIntegration');
-              console.log('=== END TEMPLATE INTEGRATION RENDER CONDITION ===');
+          {(() => {
+            console.log('=== RENDER CONDITIONS CHECK ===');
+            console.log('currentStep:', currentStep);
+            console.log('analysisResults:', analysisResults);
+            console.log('typeof analysisResults:', typeof analysisResults);
+            console.log('!!analysisResults:', !!analysisResults);
+            console.log('isTemplateFinalAnalyzing:', isTemplateFinalAnalyzing);
+            
+            if (currentStep === 4 && !analysisResults) {
+              console.log('✅ RENDERING: TemplateIntegration');
               return (
                 <TemplateIntegration
                   onTemplateUpdate={handleTemplateUpdate}
@@ -411,16 +419,9 @@ const ThreeStepFlow = () => {
                   isAnalyzing={isTemplateFinalAnalyzing}
                 />
               );
-            })()
-          )}
-          
-          {currentStep === 4 && analysisResults && (
-            (() => {
-              console.log('=== PROPOSAL TABS RENDER CONDITION (Simplified) ===');
-              console.log('currentStep:', currentStep);
-              console.log('analysisResults exists:', !!analysisResults);
-              console.log('Rendering ProposalTabs');
-              
+            } else if (currentStep === 4 && analysisResults) {
+              console.log('✅ RENDERING: ProposalTabs');
+              console.log('analysisResults content:', analysisResults);
               return (
                 <div className="bg-white rounded-lg shadow-sm">
                   <ProposalTabs 
@@ -431,8 +432,11 @@ const ThreeStepFlow = () => {
                   />
                 </div>
               );
-            })()
-          )}
+            } else {
+              console.log('❌ NO RENDERING: conditions not met');
+              return null;
+            }
+          })()}
         </div>
 
         {/* ナビゲーションボタン */}
