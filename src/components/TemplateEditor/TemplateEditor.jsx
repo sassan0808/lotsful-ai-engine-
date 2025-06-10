@@ -192,7 +192,7 @@ const TemplateEditor = ({ onTemplateUpdate }) => {
           <h2 className="text-2xl font-bold text-gray-900">情報統合編集</h2>
         </div>
         <p className="text-gray-600">
-          これまでの情報を確認・編集し、追加情報を入力してください。AI分析で不足情報を補完できます。
+          現状分析とプロジェクト設計の情報を入力してください。商談議事録等の追加情報をAI分析で構造化できます。
         </p>
       </div>
 
@@ -302,27 +302,36 @@ const TemplateEditor = ({ onTemplateUpdate }) => {
         )}
       </div>
 
-      {/* 🏢 会社情報セクション */}
-      <CompanyInfoSection 
-        template={template}
-        expanded={expandedSections.company}
-        onToggle={() => toggleSection('company')}
-        onUpdate={updateField}
-        onUpdateArray={updateArrayField}
-        onAddArray={addArrayItem}
-        onRemoveArray={removeArrayItem}
-      />
+      {/* Step1完了状況の表示 */}
+      {template?.metadata?.step1Completed && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            <div className="flex-1">
+              <h3 className="font-semibold text-green-900">Step1完了済み</h3>
+              <p className="text-sm text-green-700 mt-1">
+                🏢 企業基本情報と🔍 事前リサーチ情報はStep1で入力済みです。
+                Step2では📊 現状分析と🎯 プロジェクト設計の情報を追加入力してください。
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* 🔍 リサーチデータセクション */}
-      <ResearchDataSection 
-        template={template}
-        expanded={expandedSections.research}
-        onToggle={() => toggleSection('research')}
-        onUpdate={updateField}
-        onUpdateArray={updateArrayField}
-        onAddArray={addArrayItem}
-        onRemoveArray={removeArrayItem}
-      />
+      {/* Step1未完了時の案内 */}
+      {!template?.metadata?.step1Completed && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2">
+            <AlertTriangle className="h-5 w-5 text-blue-600" />
+            <div className="flex-1">
+              <h3 className="font-semibold text-blue-900">Step1の完了をお勧めします</h3>
+              <p className="text-sm text-blue-700 mt-1">
+                企業基本情報の抽出はStep1で行うことを推奨しています。Step1でAI分析を実行してからStep2をご利用ください。
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 📊 現状分析セクション */}
       <CurrentAnalysisSection 

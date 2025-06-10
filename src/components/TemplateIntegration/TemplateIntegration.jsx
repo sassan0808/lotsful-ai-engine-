@@ -226,15 +226,6 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis, onAnalysi
         console.warn('⚠️ Business items are missing. This may affect analysis quality.');
       }
       
-      if (!template?.metadata?.step1Completed) {
-        console.warn('⚠️ Step1 was not completed. Basic company information may be missing.');
-        alert('⚠️ Step1の企業情報分析が完了していません。Step1で「AI分析実行」ボタンを押してからお試しください。');
-        // Step1未完了時も分析状態をリセット
-        if (onAnalysisError) {
-          onAnalysisError();
-        }
-        return;
-      }
       console.log('=== DATA VALIDATION END ===');
 
       const analysisData = {
@@ -735,11 +726,6 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis, onAnalysi
                qualityScore >= 30 ? ' - 分析実行可能（推奨項目の入力で精度向上）' : 
                ' - 重要項目の入力で分析精度が大幅に向上します'}
             </p>
-            {!template?.metadata?.step1Completed && (
-              <p className="text-red-600 text-sm mt-1">
-                ⚠️ Step1で「AI分析実行」を完了してから最終分析を実行してください
-              </p>
-            )}
           </div>
           <div className="flex items-center space-x-4">
             <button 
@@ -751,7 +737,7 @@ const TemplateIntegration = ({ onTemplateUpdate, onContinueToAnalysis, onAnalysi
             </button>
             <button
               onClick={handleDirectAnalysis}
-              disabled={qualityScore < 30 || isAnalyzing || !template?.metadata?.step1Completed}
+              disabled={qualityScore < 30 || isAnalyzing}
               className="flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {isAnalyzing ? (

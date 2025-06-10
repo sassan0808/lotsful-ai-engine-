@@ -5,6 +5,19 @@ import { Building2, FileText, Sparkles, AlertCircle, CheckCircle, Loader2, Eye }
 
 const CompanyInfoInput = ({ companyInfo, onCompanyInfoChange, template }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisCompleted, setAnalysisCompleted] = useState(false);
+  const [extractedInfo, setExtractedInfo] = useState(null);
+
+  // 初期化時にStep1完了状態を確認
+  React.useEffect(() => {
+    if (template?.metadata?.step1Completed && !analysisCompleted) {
+      setAnalysisCompleted(true);
+      setExtractedInfo({
+        companyProfile: template.companyProfile,
+        researchData: template.researchData
+      });
+    }
+  }, [template, analysisCompleted]);
 
   const handleTextChange = (value) => {
     onCompanyInfoChange({
@@ -35,6 +48,10 @@ const CompanyInfoInput = ({ companyInfo, onCompanyInfoChange, template }) => {
       }
 
       const analysisResult = await response.json();
+      
+      // Step1内で結果を表示
+      setExtractedInfo(analysisResult);
+      setAnalysisCompleted(true);
       
       // テンプレート形式で上位コンポーネントに通知（テンプレート更新を促す）
       onCompanyInfoChange({
@@ -255,12 +272,126 @@ const CompanyInfoInput = ({ companyInfo, onCompanyInfoChange, template }) => {
         </div>
       </div>
 
-      {/* テンプレート情報表示（Step1 AI分析完了後） */}
-      {template?.metadata?.step1Completed && (
+      {/* Step1 AI分析結果表示 */}
+      {analysisCompleted && extractedInfo && (
         <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="flex items-center space-x-2 mb-4">
-            <Sparkles className="h-5 w-5 text-primary-600" />
-            <h3 className="text-lg font-semibold text-gray-900">テンプレート情報（Step1完了）</h3>
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            <h3 className="text-lg font-semibold text-gray-900">AI分析結果</h3>
+            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Step1完了</span>
+          </div>
+          
+          <div className="space-y-6">
+            {/* 🏢 企業基本情報セクション */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-semibold text-blue-900 mb-3 flex items-center">
+                <Building2 className="h-4 w-4 mr-2" />
+                🏢 企業基本情報
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-blue-700">企業名</label>
+                  <p className="text-sm text-blue-900">{extractedInfo.companyProfile?.name || '情報不足により特定不可'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-blue-700">従業員数</label>
+                  <p className="text-sm text-blue-900">{extractedInfo.companyProfile?.employeeCount || '情報不足により特定不可'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-blue-700">年商</label>
+                  <p className="text-sm text-blue-900">{extractedInfo.companyProfile?.revenue || '情報不足により特定不可'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-blue-700">本社所在地</label>
+                  <p className="text-sm text-blue-900">{extractedInfo.companyProfile?.headquarters || '情報不足により特定不可'}</p>
+                </div>
+              </div>
+              
+              {/* 業界（自動連携対象） */}
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-blue-700">業界</label>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {extractedInfo.companyProfile?.industry?.map((industry, index) => (
+                    <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                      {industry}
+                    </span>
+                  )) || <span className="text-sm text-blue-900">情報不足により特定不可</span>}
+                </div>
+              </div>
+              
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-blue-700">事業内容</label>
+                <p className="text-sm text-blue-900">{extractedInfo.companyProfile?.businessDescription || '情報不足により特定不可'}</p>
+              </div>
+              
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-blue-700">主要顧客層</label>
+                <p className="text-sm text-blue-900">{extractedInfo.companyProfile?.mainCustomers || '情報不足により特定不可'}</p>
+              </div>
+            </div>
+            
+            {/* 🔍 事前リサーチ情報セクション */}
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <h4 className="font-semibold text-green-900 mb-3 flex items-center">
+                <Eye className="h-4 w-4 mr-2" />
+                🔍 事前リサーチ情報
+              </h4>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-green-700">最近の動き・ニュース</label>
+                  <p className="text-sm text-green-900">{extractedInfo.researchData?.recentNews || '情報不足により特定不可'}</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-green-700">組織の特徴・文化</label>
+                  <p className="text-sm text-green-900">{extractedInfo.researchData?.organizationCulture || '情報不足により特定不可'}</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-green-700">仮説・洞察</label>
+                  <p className="text-sm text-green-900">{extractedInfo.researchData?.hypothesisInsights || '情報不足により特定不可'}</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-green-700">商談確認事項</label>
+                  <div className="mt-1">
+                    {extractedInfo.researchData?.meetingCheckpoints?.length > 0 ? (
+                      <ul className="list-disc list-inside text-sm text-green-900 space-y-1">
+                        {extractedInfo.researchData.meetingCheckpoints.map((item, index) => (
+                          <li key={index}>{item}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-green-900">情報不足により特定不可</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-start space-x-2">
+              <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-yellow-800">次のステップ</p>
+                <p className="text-sm text-yellow-700 mt-1">
+                  企業基本情報の抽出が完了しました。Step2では現状分析とプロジェクト設計の情報を追加入力します。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* テンプレート情報表示（後方互換性） */}
+      {!analysisCompleted && template?.metadata?.step1Completed && (
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="flex items-center space-x-2 mb-4">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            <h3 className="text-lg font-semibold text-gray-900">既存のテンプレート情報</h3>
+            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Step1完了済み</span>
           </div>
           
           <div className="space-y-6">
@@ -268,7 +399,7 @@ const CompanyInfoInput = ({ companyInfo, onCompanyInfoChange, template }) => {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h4 className="font-semibold text-blue-900 mb-3 flex items-center">
                 <Building2 className="h-4 w-4 mr-2" />
-                企業基本情報
+                🏢 企業基本情報
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
